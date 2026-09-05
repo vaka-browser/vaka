@@ -128,6 +128,32 @@ const TRACKER_HOSTS = new Set([
 ]);
 let adblockOn = true;
 let adblockCount = 0;
+/* Popup-regler ($popup, ~6 000 st i EasyList/AdGuard/uBlock) stöds inte av Ghostery-motorn
+ * och kastas vid parsning. Vi plockar ut dem själva till en egen liten motor som bara
+ * används för window.open/navigeringsmål – samma sak som Brave/uBlock gör med dem. */
+let popupEngine = null;
+function buildPopupEngine(dir, files) {
+  try {
+    const rules = [];
+    for (const f of files) {
+      let txt = ''; try { txt = fs.readFileSync(path.join(dir, f), 'utf8'); } catch { continue; }
+      for (const line of txt.split('\n')) {
+        if (!/\$[^\s]*\bpopup\b/.test(line) || line.startsWith('!') || line.includes('~popup')) continue;
+        const r = line.replace(/\$([^\s]*)$/, (m, opts) => { const o = opts.split(',').filter((x) => x !== 'popup'); return o.length ? '$' + o.join(',') : ''; });
+        if (r && !r.includes('##')) rules.push(r);
+      }
+    }
+    popupEngine = rules.length ? ElectronBlocker.parse(rules.join('\n'), { loadCosmeticFilters: false, loadNetworkFilters: true }) : null;
+    console.log('[adblock] popup-regler:', rules.length);
+  } catch (e) { popupEngine = null; console.warn('[adblock] popup-motor misslyckades', String(e)); }
+}
+function popupRuleMatch(url, sourceUrl) {
+  if (!popupEngine || !AdRequest) return false;
+  for (const type of ['document', 'other']) {
+    try { if (popupEngine.match(AdRequest.fromRawDetails({ type, url, sourceUrl: sourceUrl || url })).match) return true; } catch {}
+  }
+  return false;
+}
 function hostCategory(url) {
   try {
     const h = new URL(url).hostname;
@@ -198,6 +224,7 @@ function loadEngine() {
           try { fs.writeFileSync(bin, Buffer.from(engine.serialize())); fs.writeFileSync(meta, fp); } catch {}
         }
       }
+      setImmediate(() => buildPopupEngine(dir, files));   // $popup-regler, efter huvudmotorn
       attachResources(dir);   // 149 scriptlets — garanterat satta oavsett cache/parse
       engine.on('request-blocked', (request) => {
         adblockCount++;
@@ -260,6 +287,13 @@ function installAdblockOn(sess) {
   else loadEngine();
 }
 
+// Popup-fönster som får öppnas på riktigt trots att de är korsdomän: inloggning/betalning.
+const POPUP_TRUSTED = /(^|\.)(accounts\.google\.com|google\.com|appleid\.apple\.com|apple\.com|login\.microsoftonline\.com|login\.live\.com|microsoft\.com|facebook\.com|github\.com|bankid\.com|stripe\.com|paypal\.com|klarna\.com|yahoo\.com|twitch\.tv|discord\.com|auth0\.com|okta\.com|linkedin\.com|x\.com|twitter\.com|slack\.com|zoom\.us|adyen\.com|swish\.nu|trustly\.com|vipps\.no|mobilepay\.dk|spotify\.com|amazon\.com|amazon\.se|steamcommunity\.com|steampowered\.com|epicgames\.com|battle\.net|dropbox\.com|atlassian\.com|gitlab\.com|bitbucket\.org|shopify\.com|frejaeid\.com|signicat\.com|criipto\.com|nets\.eu|paypalobjects\.com|duosecurity\.com)$/i;
+function popupTrustedHost(url) { try { return POPUP_TRUSTED.test(new URL(url).hostname); } catch { return false; } }
+function siteOf(url) {
+  try { const p = new URL(url).hostname.toLowerCase().split('.'); return (p.length > 2 && /^(co|com|org|net|gov|edu|ac)$/.test(p[p.length - 2])) ? p.slice(-3).join('.') : p.slice(-2).join('.'); } catch { return ''; }
+}
+function sameSite(a, b) { const x = siteOf(a); return !!x && x === siteOf(b); }
 // Ska den här navigeringen/popupen dödas direkt? (annons/tracker/skräp-schema)
 function isBlockedTarget(url, sourceUrl) {
   if (!/^https?:/i.test(url)) return true;            // javascript:, data:, blob:, about:blank-kedjor
@@ -268,6 +302,7 @@ function isBlockedTarget(url, sourceUrl) {
       const r = AdRequest.fromRawDetails({ type: 'document', url, sourceUrl: sourceUrl || url });
       if (engine.match(r).match) return true;
     }
+    if (popupRuleMatch(url, sourceUrl)) return true;       // $popup-regler (popunder-/annonsfönster)
   } catch {}
   return !!hostCategory(url);
 }
@@ -508,14 +543,26 @@ function ensureView(ctx, tabId) {
   // aldrig genom window.open/navigering. Därför är även window.open-nedladdningar säkra.
   wc.setWindowOpenHandler((details) => {
     const url = details.url || '';
-    if (adblockOn && (!/^https?:/i.test(url) || isBlockedTarget(url, wc.getURL()))) {
+    const from = wc.getURL();
+    // Popup-storm: Chrome/Brave tillåter EXAKT ett fönster per klick. Fler window.open inom
+    // två sekunder från samma sida är en annonsflod (piratsajter) → allt utom det första dör.
+    const st = wc.__popups || (wc.__popups = { t: 0, n: 0 }); const now = Date.now();
+    st.n = (now - st.t < 2000) ? st.n + 1 : 1; st.t = now;
+    if (st.n > 1) return { action: 'deny' };
+    if (adblockOn && (!/^https?:/i.test(url) || isBlockedTarget(url, from))) {
       return { action: 'deny' };                                  // annons/pop-under/skräp-schema → död
     }
-    // Äkta popup (t.ex. "Logga in med Google"/OAuth) öppnas med window.open + fönster-features.
-    // Måste öppnas som RIKTIGT popup-fönster med window.opener bevarad + delad session,
-    // annars svarar Google "This page must be opened as a popup" och inloggningen dör.
+    // Äkta popup (t.ex. "Logga in med Google"/OAuth) öppnas med window.open + fönster-features och
+    // måste vara ett RIKTIGT fönster med window.opener + delad session. Men det får BARA gälla
+    // samma sajt eller kända inloggnings-/betaltjänster – allt annat är popunder-mönstret från
+    // annonssajter (popunder) och dödas helt.
     if (details.disposition === 'new-window' || (details.features && details.features.length)) {
-      return { action: 'allow', overrideBrowserWindowOptions: { width: 520, height: 680, resizable: true, autoHideMenuBar: true } };
+      if (sameSite(url, from) || popupTrustedHost(url)) {
+        return { action: 'allow', overrideBrowserWindowOptions: { width: 520, height: 680, resizable: true, autoHideMenuBar: true } };
+      }
+      // Korsdomän-fönster från en okänd sajt = popunder. Dör helt – blir inte ens en flik.
+      // (Vanliga länkar med target=_blank har inga fönster-features och blir flik som vanligt.)
+      return { action: 'deny' };
     }
     if (url) sendTo(ctx, 'open-new-tab', url);                     // vanlig ny flik (Ctrl/mitten-klick, target=_blank)
     return { action: 'deny' };
