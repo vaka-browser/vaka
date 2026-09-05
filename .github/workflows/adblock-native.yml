@@ -1,0 +1,40 @@
+# Bygger Braves adblock-rust (npm: adblock-rs) som native Node-modul för varje plattform.
+# Paketet på npm saknar färdiga binärer och kräver Rust vid installation – därför byggs de här
+# och laddas ner som artefakter till native/adblock/<platform>-<arch>/ innan release.
+name: adblock-native
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: adblock-rs version
+        default: "0.13.3"
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04, target: linux-x64 }
+          - { os: windows-2022, target: win32-x64 }
+          - { os: macos-14,     target: darwin-arm64 }
+          - { os: macos-13,     target: darwin-x64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build adblock-rs
+        shell: bash
+        run: |
+          mkdir build && cd build && npm init -y >/dev/null
+          npm install adblock-rs@${{ github.event.inputs.version }} --no-audit --no-fund
+          mkdir -p out/${{ matrix.target }}
+          cp node_modules/adblock-rs/js/index.node out/${{ matrix.target }}/
+          cp node_modules/adblock-rs/js/index.js out/${{ matrix.target }}/
+          cp node_modules/adblock-rs/package.json out/${{ matrix.target }}/
+          cp node_modules/adblock-rs/LICENSE out/${{ matrix.target }}/
+          ls -la out/${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adblock-${{ matrix.target }}
+          path: build/out/${{ matrix.target }}
