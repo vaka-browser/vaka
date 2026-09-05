@@ -1,0 +1,32 @@
+# Dependencies and build output
+node_modules/
+dist/
+dist-installer/
+
+# Local backups and scratch files
+*.bak
+*.pre-*
+*.orig
+*.log
+scan-report.json
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets never belong here
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+
+# Stale local files not part of the project
+/de.json
+/meta_test.js
+/repro_chatgpt.js
+/scan_test.js
+/shell.js
+/ublock-filters.txt

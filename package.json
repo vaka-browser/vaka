@@ -1,0 +1,89 @@
+{
+  "name": "vaka-browser",
+  "version": "0.3.80",
+  "description": "Vaka – the safe Swedish browser. Built-in protection, open family features and an AI security assistant.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "build:mac": "electron-packager . \"Vaka\" --platform=darwin --arch=x64 --out=dist --overwrite --app-bundle-id=se.vaka.browser --ignore=\"(dist|/\\.git|meta_test\\.js|scan_test\\.js|.*\\.md)\"",
+    "build:linux": "electron-builder --linux --x64",
+    "build:win": "electron-builder --win --x64"
+  },
+  "author": "Cetto",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.18.2",
+    "cross-fetch": "^4.1.0",
+    "electron-updater": "^6.8.9",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.4.4",
+    "@tailwindcss/cli": "^4.3.3",
+    "electron": "github:castlabs/electron-releases#v43.2.0+wvcus",
+    "electron-builder": "^24.13.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "build": {
+    "appId": "se.vaka.browser",
+    "productName": "Vaka",
+    "directories": {
+      "output": "dist-installer",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!dist-installer/**",
+      "!build/**",
+      "!*.md",
+      "!meta_test.js",
+      "!scan_test.js",
+      "!**/*.map",
+      "!**/.git/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Vaka-Setup.exe"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Vaka.AppImage",
+      "category": "Network"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "northcrafto",
+        "repo": "vaka-dl",
+        "releaseType": "release"
+      }
+    ],
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Vaka",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "afterPack": "build/afterPack.js",
+    "electronDist": "node_modules/electron/dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/northcrafto/vaka.git"
+  },
+  "homepage": "https://vaka-web-lovat.vercel.app",
+  "bugs": {
+    "url": "https://github.com/northcrafto/vaka/issues"
+  }
+}

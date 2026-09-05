@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  /* marginalen ger plats åt skuggan; kortet är själva notisen */
+  .card { margin: 12px; background: #fff; border-radius: 14px; padding: 16px 18px;
+    box-shadow: 0 18px 50px rgba(14,42,71,.30), 0 2px 8px rgba(14,42,71,.12);
+    border: 1px solid #e6ebf1; animation: pop .16s cubic-bezier(.2,.7,.2,1); }
+  @keyframes pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  h1 { font-size: 15px; font-weight: 700; color: #0e2a47; margin: 0 0 5px; letter-spacing: -.01em; }
+  p { font-size: 13px; color: #5a6b7b; margin: 0; line-height: 1.5; }
+  p b { color: #0e2a47; font-weight: 700; }
+  label { display: flex; align-items: center; gap: 9px; margin-top: 13px; cursor: pointer; user-select: none; }
+  label input { width: 15px; height: 15px; accent-color: #c2643f; cursor: pointer; }
+  label span { font-size: 12.5px; color: #5a6b7b; }
+  .row { display: flex; justify-content: flex-end; gap: 9px; margin-top: 15px; }
+  button { height: 36px; padding: 0 18px; border-radius: 999px; font-weight: 600; font-size: 13px;
+    cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s; }
+  #cancel { background: #fff; color: #0e2a47; border-color: #d3dce6; }
+  #cancel:hover { background: #f4f7fa; }
+  #yes { background: #c2643f; color: #fff; }
+  #yes:hover { filter: brightness(1.06); }
+  button:focus { outline: none; }
+  button:focus-visible { outline: 2px solid #c2643f; outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Stäng alla flikar?</h1>
+    <p id="msg">Du har flera flikar öppna i webbläsarfönstret.</p>
+    <label><input type="checkbox" id="again" /><span>Fråga mig inte igen</span></label>
+    <div class="row">
+      <button id="cancel">Avbryt</button>
+      <button id="yes">Stäng alla</button>
+    </div>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    const n = Number(new URLSearchParams(location.search).get('n') || 0);
+    document.getElementById('msg').innerHTML = 'Du har <b>' + n + ' flikar</b> öppna i webbläsarfönstret.';
+    const done = (payload) => ipcRenderer.send('close-confirm-done', payload);
+    document.getElementById('cancel').onclick = () => done({ ok: false });
+    document.getElementById('yes').onclick = () => done({ ok: true, again: document.getElementById('again').checked });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') done({ ok: false });
+      if (e.key === 'Enter') done({ ok: true, again: document.getElementById('again').checked });
+    });
+  </script>
+</body>
+</html>

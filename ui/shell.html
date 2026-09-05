@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>Vaka</title>
+  <link rel="stylesheet" href="tailwind.css" />
+<style>#bm-star{color:var(--color-navy-900);opacity:.55;transition:all .15s;cursor:pointer}#bm-star:hover{opacity:1;background:rgba(28,43,58,.09)}#bm-star.on{opacity:1;color:var(--color-terra,#d9663f)}#bm-star.on svg{fill:currentColor}</style>
+<style id="vaka-hide">#net-btn,#quiz-launch,.set-tab[data-cat="kalender"],.set-panel[data-cat="kalender"]{display:none!important}</style>
+<style>
+@keyframes dlpulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+#dl-btn.dl-busy svg { animation: dlpulse 1.1s ease-in-out infinite; color: #2f8fd4; }
+</style>
+</head>
+<body class="flex flex-col">
+
+  <div id="apptoast" class="hidden" style="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:80;background:var(--color-navy-900);color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);"></div>
+
+  <!-- Farlig nedladdning stoppad -->
+  <div id="dlthreat" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;width:min(560px,94%);background:#fff;border:1px solid #f0cfcf;border-left:4px solid var(--color-danger);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.28);padding:14px 16px;">
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <span style="flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#fbeaea;color:var(--color-danger);"><svg class="ic" style="width:20px;height:20px;stroke-width:1.8"><use href="#i-shield-x" /></svg></span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:14px;color:#c0362f;">Vaka blockerade en farlig fil</div>
+        <div id="dlthreat-msg" style="font-size:12.5px;color:#5a6b7a;margin-top:3px;line-height:1.45;"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button id="dlthreat-remove" class="btn btn-risk" style="height:34px;">Ta bort filen</button>
+          <button id="dlthreat-keep" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--color-line);background:#fff;color:var(--color-navy-900);font-size:12.5px;font-weight:600;cursor:pointer;">Behåll ändå</button>
+        </div>
+      </div>
+      <button id="dlthreat-close" class="icon-btn" style="flex:none;width:28px;height:28px;color:var(--color-navy-600);"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+    </div>
+  </div>
+
+
+  <!-- Ikon-sprite -->
+  <svg width="0" height="0" class="hidden" aria-hidden="true">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+    <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-reload" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 6h16v10h-9l-4 3v-3H4z"/><path d="M8 10h8M8 13h5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/></symbol>
+    <symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/><path d="M9 11.5l2 2 4-4.5"/></symbol>
+    <symbol id="i-shield-search" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/><circle cx="12" cy="11" r="2.3"/></symbol>
+    <symbol id="i-shield-alert" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/><path d="M12 8.5v3.5M12 14.6v.2"/></symbol>
+    <symbol id="i-shield-x" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/><path d="M10 9.5l4 4M14 9.5l-4 4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 14h4"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+    <symbol id="i-shield-off" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.4-3.2 7.6-8 9-4.8-1.4-8-4.6-8-9V6z"/><path d="M4.5 4.5l15 15"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M4 16l4.5-4 4 3.5L16 12l4 4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3 8"/><path d="M3 3.5V8h4.5"/><path d="M12 8v4.5l3 1.8"/></symbol>
+    <symbol id="i-incognito" viewBox="0 0 24 24"><path d="M6 10.5l1.4-4.2a2 2 0 0 1 1.9-1.3h5.4a2 2 0 0 1 1.9 1.3L18 10.5"/><path d="M3 11h18"/><circle cx="7.5" cy="15" r="2.5"/><circle cx="16.5" cy="15" r="2.5"/><path d="M10 15c.6-.7 3.4-.7 4 0"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 19h14"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16.5 6.5l2 2M13.5 9.5l2 2"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12h9.2l.9-12"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  </svg>
+
+  <!-- Flikrad -->
+  <div id="tabstrip" class="chrome-top flex items-center gap-1.5 px-3 pt-2 pb-1" style="-webkit-app-region: drag;">
+    <div id="brandbar" class="flex items-center gap-1.5 pr-2 select-none">
+      <span style="color: var(--color-terra);"><svg class="ic ic-sm"><use href="#i-shield" /></svg></span>
+      <span class="text-[12.5px] font-bold tracking-tight">Vaka</span>
+    </div>
+    <div id="tabs" class="flex items-center gap-1 min-w-0" style="-webkit-app-region: no-drag;"></div>
+    <button id="newtab-btn" class="newtab-btn" title="Ny flik" style="-webkit-app-region: no-drag;">
+      <svg class="ic ic-sm"><use href="#i-plus" /></svg>
+    </button>
+    <div class="flex-1 self-stretch"></div>
+  </div>
+
+  <!-- Verktygsrad -->
+  <div id="toolbar" class="chrome-bar flex items-center gap-1.5 px-3 h-14">
+    <button id="back" class="icon-btn" title="Tillbaka"><svg class="ic"><use href="#i-back" /></svg></button>
+    <button id="forward" class="icon-btn" title="Framåt"><svg class="ic"><use href="#i-fwd" /></svg></button>
+    <button id="reload" class="icon-btn" title="Uppdatera"><svg class="ic"><use href="#i-reload" /></svg></button>
+
+    <div id="omnibox" class="flex-1 flex items-center gap-2.5 h-10 px-4 mx-1 rounded-full bg-white ring-1 ring-[color:var(--color-line)] shadow-[0_1px_3px_rgba(14,42,71,.06)] focus-within:ring-2 focus-within:ring-terra/50 transition">
+      <span id="shield" class="shield-wrap shield-home"><svg class="ic ic-sm"><use href="#i-shield" /></svg></span>
+      <input id="address" type="text" spellcheck="false" placeholder="Sök tryggt eller skriv en adress"
+             class="flex-1 bg-transparent outline-none text-[14px] text-navy-900 placeholder:text-navy-900/40" />
+      <button id="bm-star" class="grid place-items-center w-7 h-7 rounded-lg flex-none" title="Spara sida i bokmärkesfältet"><svg class="ic" style="width:18px;height:18px"><use href="#i-bookmark" /></svg></button>
+      <span id="search-engine" class="text-[11px] font-semibold text-navy-900/35 select-none">Google</span>
+    </div>
+    <div id="omni-suggest"></div>
+
+    <button id="allow-chip" class="pill" title="Tillfälligt tillåten sida – tid kvar" style="display:none;background:rgba(23,138,90,.13);color:#0f7a4e;font-weight:800;">
+      🔓 <span id="allow-chip-txt" class="tabular-nums"></span>
+    </button>
+    <button id="adblock" class="pill" title="Annonsblockerare">
+      <svg class="ic ic-sm"><use href="#i-ban" /></svg><span id="adcount" class="tabular-nums">0</span>
+    </button>
+    <button id="krypto-btn" class="pill pill-accent off" title="Krypto: din säkerhetsassistent">
+      <img src="krypto-owl-face.png" alt="" style="width:18px;height:18px;object-fit:contain;flex:none;">Krypto AI
+    </button>
+    <button id="net-btn" class="icon-btn" title="Nätverksinspektör – se all trafik">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 5 4-14 2 9h2l1-2 1 2h2"/></svg>
+    </button>
+    <button id="dl-btn" class="icon-btn relative" title="Nedladdningar" style="display:none"><svg class="ic"><use href="#i-download" /></svg><span id="dl-badge" style="display:none;position:absolute;bottom:2px;right:2px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:#2f8fd4;color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--color-chrome,#eef2f6)"></span></button>
+    <button id="settings-btn" class="icon-btn" title="Inställningar"><svg class="ic"><use href="#i-settings" /></svg></button>
+    <button id="account-btn" class="icon-btn relative" title="Konto"><svg class="ic"><use href="#i-user" /></svg></button>
+    <button id="menu-btn" class="icon-btn" title="Meny"><svg class="ic"><use href="#i-menu" /></svg></button>
+  </div>
+
+  <!-- Bokmärkesfält (favoriter som chips, syns när man sparat minst en) -->
+  <div id="bmbar" style="display:none;align-items:center;gap:3px;padding:5px 10px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;background:var(--color-chrome,#eef2f6);border-top:1px solid var(--color-line);"></div>
+
+  <!-- Webbinnehåll -->
+  <div id="views" class="relative flex-1 bg-white">
+    <!-- Nätverksinspektör (dockad längst ner, syns när webbvyn krymps) -->
+    <div id="netpanel">
+      <div class="np-head">
+        <span class="np-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M3 12h4l2 5 4-14 2 9h2l1-2 1 2h2"/></svg>Nätverk</span>
+        <input id="np-filter" placeholder="Filtrera på URL, metod eller status…" spellcheck="false" />
+        <span id="np-count">0 requests</span>
+        <button id="np-clear" class="np-hbtn">Rensa</button>
+        <button id="np-close" class="np-hbtn np-x" title="Stäng">✕</button>
+      </div>
+      <div class="np-body">
+        <div class="np-listwrap">
+          <table class="np-table">
+            <thead><tr><th style="width:62px">Metod</th><th style="width:54px">Status</th><th>Domän</th><th>Väg</th><th style="width:74px">Typ</th><th style="width:66px">Storlek</th><th style="width:52px">Tid</th></tr></thead>
+            <tbody id="np-rows"></tbody>
+          </table>
+        </div>
+        <div class="np-detail" id="np-detail"><div class="np-empty">Klicka på en request för att se headers och body.</div></div>
+      </div>
+    </div>
+    <!-- Innehållsvarning (liten notis över sidan) -->
+    <div id="infobar" class="absolute top-0 left-0 right-0 z-[60] flex items-center gap-3 px-4 text-white" style="height:56px; display:none; box-shadow:0 6px 20px rgba(0,0,0,.22);">
+      <span id="infobar-ico" class="grid place-items-center w-8 h-8 rounded-full flex-none"></span>
+      <div class="min-w-0 flex-1">
+        <div id="infobar-text" class="text-[13.5px] font-semibold leading-tight truncate"></div>
+        <div id="infobar-sub" class="text-[12px] opacity-80 leading-tight truncate">Är du säker på att du vill stanna kvar här?</div>
+      </div>
+      <button id="infobar-leave" class="h-8 px-3.5 rounded-lg text-[13px] font-bold text-white flex-none" style="background:var(--color-danger);">Lämna sidan</button>
+      <button id="infobar-stay" class="h-8 px-3 rounded-lg text-[13px] font-semibold flex-none" style="background:rgba(255,255,255,.25);color:#fff;">Stanna kvar</button>
+    </div>
+
+    <!-- Spara lösenord-bar -->
+    <div id="pwbar" class="absolute top-0 left-0 right-0 z-[60] flex items-center gap-3 px-4 text-navy-900" style="height:56px;display:none;background:#fff;border-bottom:1px solid var(--color-line);box-shadow:0 6px 20px rgba(14,42,71,.12);">
+      <span class="grid place-items-center w-8 h-8 rounded-full flex-none" style="background:var(--color-paper);color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-key" /></svg></span>
+      <div class="min-w-0 flex-1">
+        <div class="text-[13.5px] font-semibold leading-tight">Spara lösenordet?</div>
+        <div id="pwbar-sub" class="text-[12px] text-navy-900/50 leading-tight truncate">Vaka kan fylla i det åt dig nästa gång.</div>
+      </div>
+      <button id="pwbar-save" class="h-8 px-3.5 rounded-lg text-[13px] font-bold text-white flex-none" style="background:var(--color-terra);">Spara</button>
+      <button id="pwbar-no" class="h-8 px-3 rounded-lg text-[13px] font-semibold flex-none" style="background:var(--color-paper);color:var(--color-navy-900);">Inte nu</button>
+    </div>
+
+    <!-- Lösenord sparat → erbjud autofyll -->
+    <div id="pwfillbar" class="absolute top-0 left-0 right-0 z-[60] flex items-center gap-3 px-4 text-navy-900" style="height:56px;display:none;background:#fff;border-bottom:1px solid var(--color-line);box-shadow:0 6px 20px rgba(14,42,71,.12);">
+      <span class="grid place-items-center w-8 h-8 rounded-full flex-none" style="background:#e7f6ee;color:#0f7a4e;"><svg class="ic ic-sm"><use href="#i-shield-check" /></svg></span>
+      <div class="min-w-0 flex-1">
+        <div class="text-[13.5px] font-semibold leading-tight">Lösenordet är sparat</div>
+        <div id="pwfillbar-sub" class="text-[12px] text-navy-900/50 leading-tight truncate">Vill du att vi fyller i det åt dig automatiskt nästa gång?</div>
+      </div>
+      <button id="pwfillbar-yes" class="h-8 px-3.5 rounded-lg text-[13px] font-bold text-white flex-none" style="background:var(--color-terra);">Ja, fyll i åt mig</button>
+      <button id="pwfillbar-no" class="h-8 px-3 rounded-lg text-[13px] font-semibold flex-none" style="background:var(--color-paper);color:var(--color-navy-900);">Nej tack</button>
+    </div>
+
+    <!-- Vaka Wallet: spara kort-notis -->
+    <div id="wsavebar" class="absolute top-0 left-0 right-0 z-[60] flex items-center gap-3 px-4 text-navy-900" style="height:56px;display:none;background:#fff;border-bottom:1px solid var(--color-line);box-shadow:0 6px 20px rgba(14,42,71,.12);">
+      <span class="grid place-items-center w-8 h-8 rounded-full flex-none" style="background:var(--color-paper);color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-card" /></svg></span>
+      <div class="min-w-0 flex-1">
+        <div class="text-[13.5px] font-semibold leading-tight">Vill du spara kortet till nästa köp?</div>
+        <div id="wsavebar-sub" class="text-[12px] text-navy-900/50 leading-tight truncate">Sparas krypterat på din dator.</div>
+      </div>
+      <button id="wsavebar-save" class="h-8 px-3.5 rounded-lg text-[13px] font-bold text-white flex-none" style="background:var(--color-terra);">Spara</button>
+      <button id="wsavebar-no" class="h-8 px-3 rounded-lg text-[13px] font-semibold flex-none" style="background:var(--color-paper);color:var(--color-navy-900);">Inte nu</button>
+    </div>
+
+    <!-- Vaka Wallet: fyll i kort-notis -->
+    <div id="wfillbar" class="absolute top-0 left-0 right-0 z-[60] flex items-center gap-3 px-4 text-navy-900" style="height:56px;display:none;background:#fff;border-bottom:1px solid var(--color-line);box-shadow:0 6px 20px rgba(14,42,71,.12);">
+      <span class="grid place-items-center w-8 h-8 rounded-full flex-none" style="background:var(--color-paper);color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-card" /></svg></span>
+      <div class="min-w-0 flex-1">
+        <div class="text-[13.5px] font-semibold leading-tight">Fyll i med ditt sparade kort?</div>
+        <div id="wfillbar-sub" class="text-[12px] text-navy-900/50 leading-tight truncate">Ett tryck fyller i hela kortet.</div>
+      </div>
+      <button id="wfillbar-fill" class="h-8 px-3.5 rounded-lg text-[13px] font-bold text-white flex-none" style="background:var(--color-terra);">Fyll i</button>
+      <button id="wfillbar-no" class="h-8 px-3 rounded-lg text-[13px] font-semibold flex-none" style="background:var(--color-paper);color:var(--color-navy-900);">Inte nu</button>
+    </div>
+
+    <!-- Startsida -->
+    <div id="newtabpage" class="absolute inset-0 hidden overflow-hidden">
+      <div id="nt-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+           style="background: linear-gradient(150deg,#0e2a47,#14375c 45%,#1d4a76);"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(8,20,35,.28), rgba(8,20,35,.72));"></div>
+      <div class="relative z-10 h-full flex flex-col items-center justify-center px-8 text-white">
+        <div id="nt-clock" class="text-[64px] leading-none font-thin tracking-tight drop-shadow-lg"></div>
+        <div id="nt-greet" class="mt-2 text-[19px] font-medium text-white/90 drop-shadow-lg"></div>
+        <div class="mt-1.5 mb-8 flex items-center gap-2 text-terra-300 text-[15px] font-semibold">
+          <svg class="ic ic-sm"><use href="#i-shield" /></svg>
+          <span>Vaka</span>
+        </div>
+        <div class="w-[min(560px,92%)] flex items-center gap-3 h-13 px-5 py-3.5 rounded-full bg-white/95 shadow-2xl backdrop-blur">
+          <span class="text-safe"><svg class="ic ic-sm"><use href="#i-shield-check" /></svg></span>
+          <input id="nt-search" type="text" placeholder="Sök tryggt eller skriv en adress" spellcheck="false"
+                 class="flex-1 bg-transparent outline-none text-[16px] text-navy-900 placeholder:text-navy-900/40" />
+        </div>
+        <div id="shortcuts" class="mt-9 grid gap-4 justify-center" style="grid-template-columns: repeat(auto-fit, 88px); width: min(660px, 94%);"></div>
+        <button id="quiz-launch" class="mt-8 group flex items-center gap-3.5 rounded-2xl">
+          <span class="ql-ic grid place-items-center flex-none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2a1409" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg>
+          </span>
+          <span class="text-left leading-tight flex-1 min-w-0">
+            <span class="block text-[14px] font-bold text-white">Var ska du börja jaga?</span>
+            <span class="block text-[12px]" style="color:#ffc7ad;">Ta quizet — vi matchar dig mot rätt program</span>
+          </span>
+          <span class="ql-arrow grid place-items-center flex-none">→</span>
+        </button>
+        <div class="mt-10 flex items-center gap-2.5 px-4 py-2 rounded-full text-[13px]"
+             style="background: rgba(51,160,106,.28); border:1px solid rgba(95,208,138,.35); color:#dff3e6;">
+          <span class="w-2 h-2 rounded-full bg-[var(--color-safe-bright)] shadow-[0_0_8px_var(--color-safe-bright)]"></span>
+          <span>Vaka blockerar annonser och granskar varje sida automatiskt.</span>
+        </div>
+        <!-- Skyddsstatistik (kumulativt, sparat lokalt) -->
+        <div class="mt-5 flex items-center gap-1 px-2 py-2.5 rounded-2xl" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(8px);">
+          <div class="text-center px-4"><div id="stat-ads" class="text-[21px] font-bold text-white leading-none">0</div><div class="text-[11px] text-white/60 mt-1">Annonser</div></div>
+          <div class="w-px h-8" style="background:rgba(255,255,255,.15)"></div>
+          <div class="text-center px-4"><div id="stat-trackers" class="text-[21px] font-bold text-white leading-none">0</div><div class="text-[11px] text-white/60 mt-1">Spårare</div></div>
+          <div class="w-px h-8" style="background:rgba(255,255,255,.15)"></div>
+          <div class="text-center px-4"><div id="stat-dangers" class="text-[21px] font-bold text-white leading-none">0</div><div class="text-[11px] text-white/60 mt-1">Farliga sidor</div></div>
+        </div>
+        <div class="mt-1.5 text-[11px] text-white/45">blockerat åt dig hittills</div>
+        <div id="nt-credit" class="absolute bottom-3.5 right-4 text-[11px] text-white/55 max-w-[42%] text-right"></div>
+      </div>
+    </div>
+
+    <!-- Intro (första gången) — frostad startsidebakgrund + mjuk text -->
+    <style>
+      #hxintro{position:absolute;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
+        background:rgba(8,16,28,.42);backdrop-filter:blur(30px) saturate(1.15);-webkit-backdrop-filter:blur(30px) saturate(1.15);
+        font-family:ui-sans-serif,system-ui,sans-serif}
+      #hxintro.gone{opacity:0;pointer-events:none;transition:opacity .7s ease}
+      #hxintro::after{content:"";position:absolute;inset:0;pointer-events:none;
+        background:linear-gradient(180deg,rgba(8,16,28,.28),rgba(8,16,28,.6))}
+      .hxbox{position:relative;z-index:2;text-align:center;padding:24px;max-width:min(660px,92vw);
+        opacity:0;transform:translateY(16px);animation:hxin 1.1s cubic-bezier(.2,.7,.15,1) .2s forwards}
+      @keyframes hxin{to{opacity:1;transform:none}}
+      .hxwm{font-weight:800;letter-spacing:-.03em;font-size:clamp(44px,10vw,92px);line-height:1;color:#fff;text-shadow:0 2px 44px rgba(0,0,0,.45)}
+      .hxsub{margin:20px auto 0;font-size:clamp(14px,2.4vw,18px);color:rgba(255,255,255,.85);max-width:42ch;line-height:1.6;text-shadow:0 1px 18px rgba(0,0,0,.4)}
+      .hxhint{margin-top:42px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);
+        display:inline-flex;align-items:center;gap:9px;opacity:0;animation:hxfade 1s ease 1.1s forwards}
+      @keyframes hxfade{to{opacity:1}}
+      .hxhint .dot{width:6px;height:6px;border-radius:50%;background:#fff;opacity:.8;animation:hxpulse 1.7s ease infinite}
+      @keyframes hxpulse{50%{opacity:.15}}
+      body.reduce-motion #hxintro *{animation:none!important;opacity:1;transform:none}
+    </style>
+    <div id="hxintro" class="gone" style="display:none">
+      <div class="hxbox">
+        <div class="hxwm">Vaka</div>
+        <div class="hxsub">Den trygga svenska webbläsaren som vakar över dig.</div>
+        <div class="hxhint"><span class="dot"></span>Tryck var som helst för att börja</div>
+      </div>
+    </div>
+
+    <!-- Krypto-vägvisare (första gången) — visar VAD Krypto gör och VAR den finns -->
+    <style>
+      #kcoach { position: fixed; inset: 0; z-index: 190; background: rgba(5,12,22,.5); }
+      #kcoach-ring { position: fixed; border: 2px solid var(--color-terra); border-radius: 12px; pointer-events: none;
+        box-shadow: 0 0 0 3px rgba(194,100,63,.35), 0 0 24px rgba(194,100,63,.6); animation: kcpulse 1.6s ease infinite; }
+      @keyframes kcpulse { 50% { box-shadow: 0 0 0 6px rgba(194,100,63,.16), 0 0 32px rgba(194,100,63,.75); } }
+      #kcoach-card { position: fixed; width: 330px; max-width: 88vw; background: #fff; border-radius: 16px; padding: 16px 16px 14px;
+        box-shadow: 0 22px 54px rgba(8,20,35,.42); animation: kcin .3s ease; }
+      @keyframes kcin { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+      #kcoach-card::before { content: ""; position: absolute; top: -7px; right: 26px; width: 15px; height: 15px; background: #fff; transform: rotate(45deg); border-radius: 3px; }
+      .kc-title { font-size: 16px; font-weight: 800; color: var(--color-navy-900); }
+      .kc-sub { font-size: 13px; color: rgb(28 43 58 / .66); margin-top: 4px; line-height: 1.5; }
+      .kc-modes { margin: 12px 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--color-navy-900); }
+      .kc-modes b { color: var(--color-terra); }
+      .kc-actions { display: flex; gap: 8px; margin-top: 8px; }
+      #kcoach-open { flex: 1; height: 38px; border: 0; border-radius: 10px; background: var(--color-terra); color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+      #kcoach-later { height: 38px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--color-paper); color: var(--color-navy-900); font-weight: 600; font-size: 13px; cursor: pointer; }
+    </style>
+    <!-- "Stäng alla flikar?" — ritas i sidan (DOM) och förankras uppe till höger vid stäng-krysset.
+         Ett eget OS-fönster gick inte att positionera på Wayland (setPosition är no-op där). -->
+    <style>
+      #closeconf { position: fixed; top: 100px; right: 12px; width: 320px; max-width: 88vw; z-index: 240;
+        background: #fff; border-radius: 14px; padding: 16px 18px; border: 1px solid var(--color-line, #e6ebf1);
+        box-shadow: 0 18px 50px rgba(14,42,71,.30), 0 2px 8px rgba(14,42,71,.12);
+        animation: ccpop .16s cubic-bezier(.2,.7,.2,1); }
+      @keyframes ccpop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+      #closeconf h1 { font-size: 15px; font-weight: 700; color: var(--color-navy-900, #0e2a47); margin: 0 0 5px; letter-spacing: -.01em; }
+      #closeconf p { font-size: 13px; color: #5a6b7b; margin: 0; line-height: 1.5; }
+      #closeconf p b { color: var(--color-navy-900, #0e2a47); font-weight: 700; }
+      #closeconf label { display: flex; align-items: center; gap: 9px; margin-top: 13px; cursor: pointer; user-select: none; }
+      #closeconf label input { width: 15px; height: 15px; accent-color: var(--color-terra, #c2643f); cursor: pointer; }
+      #closeconf label span { font-size: 12.5px; color: #5a6b7b; }
+      #closeconf .row { display: flex; justify-content: flex-end; gap: 9px; margin-top: 15px; }
+      #closeconf button { height: 36px; padding: 0 18px; border-radius: 999px; font-weight: 600; font-size: 13px;
+        cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s; }
+      #cc-cancel { background: #fff; color: var(--color-navy-900, #0e2a47); border-color: #d3dce6; }
+      #cc-cancel:hover { background: #f4f7fa; }
+      #cc-yes { background: var(--color-terra, #c2643f); color: #fff; }
+      #cc-yes:hover { filter: brightness(1.06); }
+      #closeconf button:focus-visible { outline: 2px solid var(--color-terra, #c2643f); outline-offset: 2px; }
+    </style>
+    <div id="closeconf" class="hidden">
+      <h1>Stäng alla flikar?</h1>
+      <p id="cc-msg">Du har flera flikar öppna i webbläsarfönstret.</p>
+      <label><input type="checkbox" id="cc-again" /><span>Fråga mig inte igen</span></label>
+      <div class="row">
+        <button id="cc-cancel">Avbryt</button>
+        <button id="cc-yes">Stäng alla</button>
+      </div>
+    </div>
+
+    <div id="kcoach" style="display:none">
+      <div id="kcoach-ring"></div>
+      <div id="kcoach-card">
+        <div class="kc-title">Möt Krypto — din copilot 🖤</div>
+        <p class="kc-sub">Din inbyggda bug bounty-assistent sitter alltid <b>här uppe</b>. Klicka på <b>Krypto</b> när du vill — den har fyra lägen:</p>
+        <div class="kc-modes">
+          <div><b>Fråga</b> — bolla mål, verktyg och nästa steg i jakten</div>
+          <div><b>Skriv rapport</b> — dina fynd → färdig HackerOne-rapport</div>
+          <div><b>Skicka in</b> — paketera rapporten inlämningsklar</div>
+          <div><b>Kritik</b> — granska rapporten hårt innan du skickar</div>
+        </div>
+        <div class="kc-actions">
+          <button id="kcoach-open">Öppna Krypto</button>
+          <button id="kcoach-later">Senare</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- "Var ska jag börja?"-quiz -->
+    <style>
+      #quiz { position: fixed; inset: 0; z-index: 195; background: rgba(5,12,22,.66); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+      #quiz.on { display: flex; }
+      .quiz-card { width: min(560px, 96vw); max-height: 92vh; overflow-y: auto; background: #0f2338; border: 1px solid #1e3a57; border-radius: 22px; padding: 26px 26px 24px; box-shadow: 0 30px 70px rgba(0,0,0,.5); position: relative; animation: qzin .3s ease; }
+      @keyframes qzin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      .quiz-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: 0; border-radius: 10px; background: rgba(255,255,255,.06); color: #9db4cc; cursor: pointer; font-size: 18px; line-height: 1; }
+      .quiz-close:hover { background: rgba(255,255,255,.12); color: #fff; }
+      .quiz-prog { display: flex; gap: 5px; margin: 2px 44px 22px 0; }
+      /* Startsidans quiz-knapp */
+      #quiz-launch { padding: 11px 14px 11px 12px; border-radius: 16px; cursor: pointer;
+        background: linear-gradient(135deg, rgba(224,122,76,.22), rgba(224,122,76,.07));
+        border: 1px solid rgba(224,122,76,.34); box-shadow: 0 10px 26px rgba(8,20,35,.22);
+        transition: transform .14s ease, border-color .14s ease, background .14s ease; }
+      #quiz-launch:hover { transform: translateY(-1px); border-color: rgba(224,122,76,.6);
+        background: linear-gradient(135deg, rgba(224,122,76,.3), rgba(224,122,76,.1)); }
+      #quiz-launch .ql-ic { width: 38px; height: 38px; border-radius: 12px;
+        background: linear-gradient(135deg, #e78a5f, #c2643f); box-shadow: 0 5px 14px rgba(194,100,63,.42); }
+      #quiz-launch .ql-arrow { width: 26px; height: 26px; border-radius: 9px; color: #ffd9c6;
+        background: rgba(255,255,255,.07); font-size: 15px; transition: transform .14s ease, background .14s ease; }
+      #quiz-launch:hover .ql-arrow { transform: translateX(2px); background: rgba(255,255,255,.13); }
+      .quiz-prog i { flex: 1; height: 4px; border-radius: 3px; background: rgba(255,255,255,.1); }
+      .quiz-prog i.on { background: var(--color-terra); }
+      .quiz-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-terra); }
+      .quiz-q { font-size: 21px; font-weight: 800; color: #eaf1f8; margin: 6px 0 18px; letter-spacing: -.01em; }
+      .quiz-opts { display: flex; flex-direction: column; gap: 9px; }
+      .quiz-opt { display: flex; align-items: center; gap: 13px; text-align: left; padding: 13px 15px; border-radius: 14px; border: 1px solid #234563; background: #12294a; color: #eaf1f8; cursor: pointer; transition: all .12s; }
+      .quiz-opt:hover { border-color: var(--color-terra); background: #163254; transform: translateX(2px); }
+      .quiz-opt .qo-t { font-size: 14.5px; font-weight: 700; }
+      .quiz-opt .qo-d { font-size: 12px; color: #8ea6bf; margin-top: 1px; }
+      .quiz-back { margin-top: 16px; background: none; border: 0; color: #8ea6bf; font-size: 13px; cursor: pointer; padding: 4px; }
+      .quiz-back:hover { color: #eaf1f8; }
+      /* Resultat */
+      .qr-platform { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, rgba(194,100,63,.22), rgba(194,100,63,.08)); border: 1px solid rgba(224,122,76,.4); }
+      .qr-badge { width: 46px; height: 46px; border-radius: 13px; background: var(--color-terra); color: #2a1409; display: grid; place-items: center; font-size: 22px; font-weight: 800; flex: none; }
+      .qr-plabel { font-size: 12px; color: #ffcbb3; font-weight: 600; }
+      .qr-pname { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.1; }
+      .qr-why { font-size: 13.5px; color: #cde0f0; line-height: 1.55; margin: 16px 0; }
+      .qr-meta { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+      .qr-chip { font-size: 12.5px; color: #eaf1f8; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 9px 12px; line-height: 1.45; }
+      .qr-chip b { color: var(--color-terra); }
+      .qr-warn { font-size: 12.5px; color: #ffdca8; background: rgba(233,200,120,.1); border: 1px solid rgba(233,200,120,.3); border-radius: 10px; padding: 10px 12px; line-height: 1.5; margin-bottom: 16px; }
+      .qr-steps { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+      .qr-steps li { display: flex; gap: 10px; font-size: 13px; color: #dbe8f4; line-height: 1.45; }
+      .qr-steps .n { flex: none; width: 20px; height: 20px; border-radius: 6px; background: var(--color-terra); color: #2a1409; font-size: 11.5px; font-weight: 800; display: grid; place-items: center; margin-top: 1px; }
+      .qr-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .qr-btn { flex: 1; min-width: 150px; height: 44px; border: 0; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+      .qr-btn.primary { background: var(--color-terra); color: #fff; }
+      .qr-btn.ghost { background: rgba(255,255,255,.06); color: #eaf1f8; border: 1px solid rgba(255,255,255,.14); }
+      .qr-btn:active { transform: translateY(1px); }
+      .qr-retake { margin-top: 14px; background: none; border: 0; color: #8ea6bf; font-size: 12.5px; cursor: pointer; width: 100%; }
+      .qr-retake:hover { color: #eaf1f8; }
+    </style>
+    <div id="quiz">
+      <div class="quiz-card">
+        <button class="quiz-close" id="quiz-close" title="Stäng">×</button>
+        <div class="quiz-prog" id="quiz-prog"></div>
+        <div id="quiz-body"></div>
+      </div>
+    </div>
+
+    <!-- Vaka Calendar: lägg till / redigera program -->
+    <div id="cal-modal">
+      <div class="cal-mcard">
+        <div class="cal-mhead"><span id="cal-mtitle">Nytt program</span><button class="quiz-close" id="cal-mclose" style="position:static;">×</button></div>
+        <label class="cal-lbl">Program</label>
+        <input id="cal-f-name" class="cal-in" placeholder="t.ex. Acme Ledger" spellcheck="false" />
+        <div class="cal-row2">
+          <div><label class="cal-lbl">Plattform</label><select id="cal-f-plat" class="cal-in"></select></div>
+          <div><label class="cal-lbl">Status</label><select id="cal-f-status" class="cal-in"></select></div>
+        </div>
+        <label class="cal-lbl">Planerat datum <span style="opacity:.5">(valfritt)</span></label>
+        <input id="cal-f-date" type="date" class="cal-in" />
+        <label class="cal-lbl">Anteckningar</label>
+        <textarea id="cal-f-notes" class="cal-in" rows="3" placeholder="Scope, idéer, fynd…" spellcheck="false"></textarea>
+        <div class="cal-mactions">
+          <button id="cal-f-del" class="qr-btn ghost" style="display:none;flex:none;">Ta bort</button>
+          <button id="cal-f-save" class="qr-btn primary" style="flex:1;">Spara</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inkognito-startsida -->
+    <div id="incogpage" class="absolute inset-0 hidden overflow-hidden" style="background: radial-gradient(125% 92% at 50% 18%, #2a1148 0%, #170b2c 48%, #08040f 100%);">
+      <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(38% 30% at 76% 26%, rgba(168,85,247,.20), transparent 70%), radial-gradient(46% 36% at 18% 78%, rgba(124,58,237,.16), transparent 72%);"></div>
+      <div class="relative z-10 h-full flex flex-col items-center justify-center px-8 text-center">
+        <div class="mb-6 incog-hero">
+          <svg viewBox="0 0 440 320" width="330" height="240" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width:74vw;">
+            <defs>
+              <linearGradient id="lockg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#c084fc"/><stop offset=".55" stop-color="#9333ea"/><stop offset="1" stop-color="#6b21a8"/>
+              </linearGradient>
+              <linearGradient id="shackg" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#ede9fe"/><stop offset="1" stop-color="#a855f7"/>
+              </linearGradient>
+              <radialGradient id="glowg" cx=".5" cy=".5" r=".5">
+                <stop offset="0" stop-color="#a855f7" stop-opacity=".55"/><stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- lila glöd -->
+            <ellipse cx="214" cy="212" rx="158" ry="126" fill="url(#glowg)"/>
+            <!-- snokaren bakom muren -->
+            <g>
+              <path d="M296 152 C296 108 316 92 340 92 C364 92 384 108 384 152 Z" fill="#100a20" stroke="#7c3aed" stroke-opacity=".55" stroke-width="2"/>
+              <path d="M312 152 C312 121 326 110 340 110 C354 110 368 121 368 152 Z" fill="#1d1236"/>
+              <ellipse cx="330" cy="137" rx="7.5" ry="8.5" fill="#ede9fe"/>
+              <ellipse cx="350" cy="137" rx="7.5" ry="8.5" fill="#ede9fe"/>
+              <circle cx="326.5" cy="139.5" r="3.6" fill="#4c1d95"/>
+              <circle cx="346.5" cy="139.5" r="3.6" fill="#4c1d95"/>
+            </g>
+            <!-- muren -->
+            <g>
+              <rect x="36" y="152" width="368" height="168" rx="4" fill="#150c28"/>
+              <rect x="36" y="152" width="368" height="9" fill="#241442"/>
+              <g stroke="#7c3aed" stroke-opacity=".16" stroke-width="2">
+                <line x1="36" y1="184" x2="404" y2="184"/><line x1="36" y1="216" x2="404" y2="216"/>
+                <line x1="36" y1="248" x2="404" y2="248"/><line x1="36" y1="280" x2="404" y2="280"/>
+                <line x1="108" y1="161" x2="108" y2="184"/><line x1="196" y1="161" x2="196" y2="184"/><line x1="284" y1="161" x2="284" y2="184"/>
+                <line x1="70" y1="184" x2="70" y2="216"/><line x1="152" y1="184" x2="152" y2="216"/><line x1="330" y1="184" x2="330" y2="216"/>
+                <line x1="110" y1="216" x2="110" y2="248"/><line x1="366" y1="216" x2="366" y2="248"/>
+              </g>
+            </g>
+            <!-- händer som greppar murkanten -->
+            <g fill="#231541" stroke="#7c3aed" stroke-opacity=".5" stroke-width="1.4">
+              <rect x="299" y="143" width="6.5" height="19" rx="3.2"/><rect x="308" y="141" width="6.5" height="21" rx="3.2"/>
+              <rect x="317" y="142" width="6.5" height="20" rx="3.2"/>
+              <rect x="360" y="142" width="6.5" height="20" rx="3.2"/><rect x="369" y="141" width="6.5" height="21" rx="3.2"/>
+              <rect x="378" y="143" width="6.5" height="19" rx="3.2"/>
+            </g>
+            <!-- hänglås i förgrunden -->
+            <g>
+              <path d="M191 182 L191 158 A29 29 0 0 1 249 158 L249 182" fill="none" stroke="url(#shackg)" stroke-width="15" stroke-linecap="round"/>
+              <rect x="156" y="182" width="128" height="116" rx="20" fill="url(#lockg)"/>
+              <rect x="166" y="190" width="108" height="40" rx="14" fill="#ffffff" opacity=".09"/>
+              <rect x="156.75" y="182.75" width="126.5" height="114.5" rx="19.5" fill="none" stroke="#e9d5ff" stroke-opacity=".4" stroke-width="1.5"/>
+              <circle cx="220" cy="224" r="12" fill="#3b0764"/>
+              <path d="M214 232 L226 232 L230 260 L210 260 Z" fill="#3b0764"/>
+            </g>
+          </svg>
+        </div>
+        <h1 class="text-[33px] font-extrabold tracking-tight text-white">Du surfar privat</h1>
+        <p class="mt-3 text-[15px] leading-relaxed" style="color:#c3b3e0; max-width:470px;">Ingen ser vad du gör här. Ingen historik, inga kakor och inga spår när du stänger fliken — hur mycket någon än försöker kika.</p>
+        <div class="mt-8 flex items-center gap-3 px-5 rounded-full" style="width:min(540px,92%); height:54px; background:rgba(23,13,38,.85); border:1px solid rgba(168,85,247,.32); box-shadow:0 10px 30px rgba(88,28,135,.28);">
+          <span style="color:#c084fc;"><svg class="ic ic-sm"><use href="#i-incognito" /></svg></span>
+          <input id="incog-search" type="text" placeholder="Sök privat eller skriv en adress" spellcheck="false"
+                 class="flex-1 bg-transparent outline-none text-[16px] text-white placeholder:text-white/35" />
+        </div>
+        <div class="mt-9 flex flex-wrap items-center justify-center gap-2.5">
+          <span class="incog-chip"><svg class="ic"><use href="#i-history" /></svg>Ingen historik</span>
+          <span class="incog-chip"><svg class="ic"><use href="#i-lock" /></svg>Inga kakor sparas</span>
+          <span class="incog-chip"><svg class="ic"><use href="#i-eye" /></svg>Inga spår</span>
+        </div>
+        <div class="mt-11 flex items-center gap-2 px-4 py-2 rounded-full" style="background:rgba(124,58,237,.18); border:1px solid rgba(168,85,247,.4); color:#e2d3fb;">
+          <svg class="ic ic-sm" style="color:#c084fc;"><use href="#i-shield-check" /></svg>
+          <span class="text-[13px] font-semibold">Vaka skyddar dig</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Varningsskärm -->
+    <div id="danger" class="hidden absolute inset-0 z-50 grid place-items-center p-6"
+         style="background: linear-gradient(160deg,#5f1d1d,#3a1212);">
+      <div class="w-full max-w-[540px] bg-white rounded-[20px] px-10 py-9 text-center shadow-[0_30px_80px_rgba(0,0,0,.45)]">
+        <div class="mx-auto w-16 h-16 grid place-items-center rounded-full" style="background:#fbeaea; color:var(--color-danger);">
+          <svg class="ic" style="width:34px;height:34px;stroke-width:1.6;"><use href="#i-shield-x" /></svg>
+        </div>
+        <h1 id="danger-title" class="mt-4 text-[24px] font-extrabold" style="color:var(--color-danger);">Den här sidan ser farlig ut</h1>
+        <p class="mt-1.5 text-[15px] text-navy-900/60">Vakas AI har skannat sidan och tycker att du <b>inte</b> borde gå in här.</p>
+        <div id="danger-reasons" class="mt-5 text-left mx-auto max-w-[440px]"></div>
+        <div class="mt-4 text-[12px] text-navy-900/40 break-all">Adress: <span id="danger-target" class="font-mono" style="color:var(--color-danger);"></span></div>
+        <div class="mt-6 flex gap-3 justify-center">
+          <button id="danger-back" class="btn btn-safe"><svg class="ic ic-sm"><use href="#i-back" /></svg>Ta mig härifrån</button>
+          <button id="danger-proceed" class="btn btn-risk">Fortsätt ändå</button>
+        </div>
+        <p class="mt-4 text-[11.5px] text-navy-900/35">Fortsätter du går du in på den riktiga sidan på egen risk.</p>
+      </div>
+    </div>
+
+    <!-- Inloggning — svart kortvy i samma stil som inställningarna (2026-09-05) -->
+    <div id="login" class="hidden absolute inset-0 z-[70] grid place-items-center p-6">
+      <div class="lg-card">
+        <button id="login-close" class="lg-close" title="Stäng"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+        <div class="lg-brand"><span class="lg-mark"><svg class="ic"><use href="#i-shield" /></svg></span><span class="lg-brand-name">Vaka</span></div>
+
+        <div id="lg-seg" class="lg-seg">
+          <button id="to-login" type="button" class="lg-seg-btn on" data-view="login">Logga in</button>
+          <button id="to-signup" type="button" class="lg-seg-btn" data-view="signup">Skapa konto</button>
+        </div>
+
+        <!-- Logga in (mejl + lösenord) -->
+        <div id="login-form" class="lg-view">
+          <div class="lg-head">
+            <h1 class="lg-h">Logga in</h1>
+            <p class="lg-lead">Välkommen tillbaka till Vaka.</p>
+          </div>
+          <label class="lg-lbl">Mejladress</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-user" /></svg></span>
+            <input id="login-email" type="email" inputmode="email" autocomplete="email" placeholder="du@exempel.se" class="lg-in" />
+          </div>
+          <label class="lg-lbl">Lösenord</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-lock" /></svg></span>
+            <input id="login-pw" type="password" autocomplete="current-password" placeholder="Ditt lösenord" class="lg-in" />
+            <button type="button" class="pw-eye lg-eye" data-target="login-pw" title="Visa lösenord"><svg class="ic ic-sm"><use href="#i-eye" /></svg></button>
+          </div>
+          <div class="lg-right"><button id="to-reset" type="button" class="lg-link">Glömt lösenord?</button></div>
+          <div id="login-error" class="lg-err" style="display:none;"></div>
+          <button id="login-submit" class="lg-btn">Logga in</button>
+          <button id="to-child" type="button" class="lg-kid-entry">
+            <span class="lg-kid-ico"><svg class="ic ic-sm"><use href="#i-user" /></svg></span>
+            <span class="lg-kid-txt"><span class="lg-kid-q">Är du ett barn?</span><span class="lg-kid-a">Logga in med din kod</span></span>
+            <span class="lg-kid-arrow">→</span>
+          </button>
+        </div>
+
+        <!-- Skapa konto (namn + mejl + lösenord) -->
+        <div id="login-signup" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <h1 class="lg-h">Skapa konto</h1>
+            <p class="lg-lead">Kom igång med Vaka på en minut.</p>
+          </div>
+          <label class="lg-lbl">Namn</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-user" /></svg></span>
+            <input id="signup-name" autocomplete="name" maxlength="40" placeholder="Ditt namn" class="lg-in" />
+          </div>
+          <label class="lg-lbl">Mejladress</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-user" /></svg></span>
+            <input id="signup-email" type="email" inputmode="email" autocomplete="email" placeholder="du@exempel.se" class="lg-in" />
+          </div>
+          <label class="lg-lbl">Lösenord</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-lock" /></svg></span>
+            <input id="signup-pw" type="password" autocomplete="new-password" placeholder="Minst 6 tecken" class="lg-in" />
+            <button type="button" class="pw-eye lg-eye" data-target="signup-pw" title="Visa lösenord"><svg class="ic ic-sm"><use href="#i-eye" /></svg></button>
+          </div>
+          <div id="signup-error" class="lg-err" style="display:none;"></div>
+          <button id="signup-submit" class="lg-btn">Skapa konto</button>
+        </div>
+
+        <!-- Verifiering (2FA-kod — både logga in och skapa konto) -->
+        <div id="login-code" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <span class="lg-ico"><svg class="ic"><use href="#i-lock" /></svg></span>
+            <h1 class="lg-h">Verifiera din mejl</h1>
+            <p class="lg-lead">Vi skickade en 6-siffrig kod till<br><span id="code-email-shown" class="lg-strong"></span></p>
+          </div>
+          <input id="login-code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="lg-code" />
+          <div id="code-error" class="lg-err center" style="display:none;"></div>
+          <button id="code-submit" class="lg-btn">Verifiera</button>
+          <div class="lg-row">
+            <button id="code-back" type="button" class="lg-link dim">← Tillbaka</button>
+            <button id="code-resend" type="button" class="lg-link">Skicka ny kod</button>
+          </div>
+        </div>
+
+        <!-- Glömt lösenord: begär kod -->
+        <div id="login-reset" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <span class="lg-ico"><svg class="ic"><use href="#i-key" /></svg></span>
+            <h1 class="lg-h">Glömt lösenord?</h1>
+            <p class="lg-lead">Skriv din mejl så skickar vi en återställningskod.</p>
+          </div>
+          <label class="lg-lbl">Mejladress</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-user" /></svg></span>
+            <input id="reset-email" type="email" inputmode="email" autocomplete="email" placeholder="du@exempel.se" class="lg-in" />
+          </div>
+          <div id="reset-error" class="lg-err" style="display:none;"></div>
+          <button id="reset-send" class="lg-btn">Skicka kod</button>
+          <div class="lg-row center"><button id="reset-back" type="button" class="lg-link dim">← Tillbaka till inloggning</button></div>
+        </div>
+
+        <!-- Glömt lösenord: kod + nytt lösenord -->
+        <div id="login-reset-confirm" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <span class="lg-ico"><svg class="ic"><use href="#i-key" /></svg></span>
+            <h1 class="lg-h">Nytt lösenord</h1>
+            <p class="lg-lead">Skriv koden vi mejlade och välj ett nytt lösenord.</p>
+          </div>
+          <label class="lg-lbl">Kod</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-lock" /></svg></span>
+            <input id="reset-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="lg-in mono" />
+          </div>
+          <label class="lg-lbl">Nytt lösenord</label>
+          <div class="lg-field">
+            <span class="lg-fi"><svg class="ic ic-sm"><use href="#i-lock" /></svg></span>
+            <input id="reset-pw" type="password" autocomplete="new-password" placeholder="Minst 6 tecken" class="lg-in" />
+            <button type="button" class="pw-eye lg-eye" data-target="reset-pw" title="Visa lösenord"><svg class="ic ic-sm"><use href="#i-eye" /></svg></button>
+          </div>
+          <div id="reset-confirm-error" class="lg-err" style="display:none;"></div>
+          <button id="reset-confirm-submit" class="lg-btn">Återställ lösenord</button>
+          <div class="lg-row">
+            <button id="reset-confirm-back" type="button" class="lg-link dim">← Tillbaka</button>
+            <button id="reset-resend" type="button" class="lg-link">Skicka ny kod</button>
+          </div>
+        </div>
+
+        <!-- Inloggad -->
+        <div id="login-account-view" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <span class="lg-ico ok"><svg class="ic"><use href="#i-shield-check" /></svg></span>
+            <h1 class="lg-h">Inloggad</h1>
+            <p class="lg-lead"><span id="login-email-shown" class="lg-strong"></span></p>
+            <span id="login-pro-badge" class="lg-chip" style="display:none;">✦ Vaka Pro</span>
+          </div>
+          <div class="lg-status"><svg class="ic ic-sm"><use href="#i-shield-check" /></svg><span>Skydd aktivt på den här datorn</span></div>
+          <button id="logout-btn" class="lg-btn ghost">Logga ut</button>
+        </div>
+
+        <!-- Logga in som barn (hemlig kod) -->
+        <div id="login-child" class="lg-view" style="display:none;">
+          <div class="lg-head">
+            <span class="lg-ico kid"><svg class="ic"><use href="#i-user" /></svg></span>
+            <h1 class="lg-h">Logga in som barn</h1>
+            <p class="lg-lead">Skriv den hemliga koden du fick av din förälder.</p>
+          </div>
+          <label class="lg-lbl center">Din kod</label>
+          <input id="child-code-input" autocomplete="off" spellcheck="false" maxlength="12" placeholder="EMMA-7X4K" class="lg-code kid" />
+          <div id="child-error" class="lg-err center" style="display:none;"></div>
+          <button id="child-submit" class="lg-btn kid">Logga in</button>
+          <div class="lg-row center"><button id="child-back" type="button" class="lg-link dim">← Tillbaka</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR-kod för sidan -->
+    <div id="qr" class="hidden absolute inset-0 z-[70] grid place-items-center p-6" style="background:linear-gradient(160deg,#0e2a47,#14375c);">
+      <div class="bg-white rounded-[20px] px-8 py-7 text-center shadow-[0_30px_80px_rgba(0,0,0,.45)] relative">
+        <button id="qr-close" class="absolute top-3.5 right-3.5 icon-btn w-8 h-8" style="color:var(--color-navy-900);"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+        <h1 class="text-[18px] font-extrabold text-navy-900 mb-1">QR-kod för sidan</h1>
+        <p class="text-[12.5px] text-navy-900/50 mb-4">Skanna med telefonen för att öppna sidan.</p>
+        <img id="qr-img" alt="QR-kod" class="mx-auto rounded-lg" width="220" height="220" />
+        <div id="qr-url" class="mt-3 text-[11.5px] text-navy-900/45 font-mono break-all" style="max-width:240px;margin-left:auto;margin-right:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Inställningar (full sida med sidomeny) -->
+    <div id="settings" class="hidden absolute inset-0 z-[70] set-shell">
+      <button id="settings-close" class="set-close icon-btn w-9 h-9 z-20" title="Stäng"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+      <aside class="set-rail">
+        <div class="set-brand"><svg class="ic" viewBox="0 0 24 24"><use href="#i-settings" /></svg>Inställningar</div>
+          <nav id="settings-nav" class="flex flex-col gap-0.5">
+            <button class="set-tab" style="--i:1" data-cat="konto"><svg class="ic"><use href="#i-user" /></svg>Konto</button>
+            <button class="set-tab" style="--i:2" data-cat="vanner"><svg class="ic"><use href="#i-chat" /></svg>Vänner &amp; chatt</button>
+            <button class="set-tab" style="--i:3" data-cat="utseende"><svg class="ic"><use href="#i-image" /></svg>Utseende</button>
+            <button class="set-tab" style="--i:4" data-cat="sok"><svg class="ic"><use href="#i-globe" /></svg>Sökmotor</button>
+            <button class="set-tab" style="--i:5" data-cat="integritet"><svg class="ic"><use href="#i-shield" /></svg>Integritet &amp; säkerhet</button>
+            <button class="set-tab" style="--i:6" data-cat="krypto"><svg class="ic"><use href="#i-chat" /></svg>Krypto</button>
+            <button class="set-tab" style="--i:7" data-cat="tillagg"><svg class="ic"><use href="#i-settings" /></svg>Tillägg</button>
+            <button class="set-tab" style="--i:8" data-cat="losenord"><svg class="ic"><use href="#i-key" /></svg>Autofyll &amp; lösenord</button>
+            <button class="set-tab" style="--i:9" data-cat="familj"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Familj</button>
+            <button class="set-tab" style="--i:10" data-cat="wallet"><svg class="ic"><use href="#i-card" /></svg>Vaka Wallet</button>
+            <button class="set-tab" style="--i:11" data-cat="kalender"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg>Vaka Calendar</button>
+            <button class="set-tab" style="--i:12" data-cat="nedladdningar"><svg class="ic"><use href="#i-download" /></svg>Nedladdningar</button>
+            <button class="set-tab" style="--i:13" data-cat="sprak"><svg class="ic"><use href="#i-globe" /></svg>Språk</button>
+            <button class="set-tab" style="--i:14" data-cat="tillganglighet"><svg class="ic"><use href="#i-eye" /></svg>Tillgänglighet</button>
+            <button class="set-tab" style="--i:15" data-cat="om"><svg class="ic"><use href="#i-shield-check" /></svg>Om</button>
+          </nav>
+      </aside>
+      <main class="set-main">
+        <div class="set-wrap">
+          <header id="set-hero" class="set-hero">
+            <div class="set-hero-avatar" id="set-hero-avatar">?</div>
+            <div class="set-hero-txt">
+              <div class="set-hero-name" id="set-hero-name">Vaka</div>
+              <div class="set-hero-email" id="set-hero-email">Inte inloggad</div>
+            </div>
+            <div class="set-hero-side" id="set-hero-side"></div>
+          </header>
+          <div class="set-content">
+          <div class="set-panel" data-cat="utseende">
+            <h2 class="set-h">Utseende</h2>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-eye" /></svg></span>
+              <div class="set-txt"><div class="set-title">Tema</div><div class="set-desc">Ljust eller mörkt utseende på webbläsaren.</div></div>
+              <div class="seg flex-none"><button id="seg-light" class="seg-btn">Ljust</button><button id="seg-dark" class="seg-btn">Mörkt</button></div>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-image" /></svg></span>
+              <div class="set-txt"><div class="set-title">Bakgrund</div><div class="set-desc">Välj en av Vakas bilder eller ladda upp en egen.</div></div>
+              <button id="settings-bg-btn" class="pill flex-none" style="height:34px;">Ändra</button>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-globe" /></svg></span>
+              <div class="set-txt"><div class="set-title">Toppsajter</div><div class="set-desc">Dina egna genvägar, eller de sidor du besöker oftast.</div></div>
+              <div class="seg flex-none"><button id="seg-fav" class="seg-btn">Mina</button><button id="seg-freq" class="seg-btn">Mest besökta</button></div>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="sok">
+            <h2 class="set-h">Sökmotor</h2>
+            <p class="set-lead mb-3">Används när du söker i adressfältet.</p>
+            <div id="engine-list" class="flex flex-col gap-2"></div>
+            <div class="mt-5 flex items-start gap-2.5 p-3.5 rounded-xl text-[12.5px]" style="background:var(--color-paper);">
+              <svg class="ic ic-sm" style="color:var(--color-safe); flex:none;"><use href="#i-shield-check" /></svg>
+              <span style="color:rgb(28 43 58 / .72);">Inkognitoflikar söker alltid via <b>Vaka Sök</b> för mer integritet.</span>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="integritet">
+            <h2 class="set-h">Integritet &amp; säkerhet</h2>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-safe);"><svg class="ic ic-sm"><use href="#i-shield-check" /></svg></span>
+              <div class="set-txt"><div class="set-title">Realtidsskydd</div><div class="set-desc">Granskar varje sida och varnar för bluff och phishing.</div></div>
+              <label class="switch"><input id="tgl-protection" type="checkbox" /><span class="track"></span></label>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-ban" /></svg></span>
+              <div class="set-txt"><div class="set-title">Annonsblockerare</div><div class="set-desc">Blockerar annonser och spårare på sidorna du besöker.</div></div>
+              <label class="switch"><input id="tgl-adblock" type="checkbox" /><span class="track"></span></label>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="krypto">
+            <h2 class="set-h">Krypto</h2>
+            <p class="set-lead mb-4" style="max-width:440px;">Krypto är din inbyggda säkerhetsassistent. Fråga om misstänkta mejl, länkar, lösenord eller vad som helst kring din trygghet på nätet.</p>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-terra);"><svg class="ic ic-sm"><use href="#i-chat" /></svg></span>
+              <div class="set-txt"><div class="set-title">Visa Krypto-knappen</div><div class="set-desc">Snabbknappen i verktygsraden.</div></div>
+              <label class="switch"><input id="tgl-krypto" type="checkbox" checked /><span class="track"></span></label>
+            </div>
+            <button id="open-krypto-btn" class="btn mt-5 text-white" style="height:42px;background:var(--color-terra);">Öppna Krypto</button>
+          </div>
+
+          <div class="set-panel hidden" data-cat="tillagg">
+            <h2 class="set-h">Tillägg</h2>
+            <p class="set-lead mb-4" style="max-width:450px;">Vaka har skyddet inbyggt, så du slipper installera osäkra tredjeparts-tillägg. Dessa är alltid aktiva:</p>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-ban" /></svg></span>
+              <div class="set-txt"><div class="set-title">Annonsblockerare</div><div class="set-desc">Blockerar annonser och spårare.</div></div>
+              <span class="badge-built">Inbyggt</span>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-safe);"><svg class="ic ic-sm"><use href="#i-shield-check" /></svg></span>
+              <div class="set-txt"><div class="set-title">Realtidsskydd</div><div class="set-desc">Varnar för bluff och phishing.</div></div>
+              <span class="badge-built">Inbyggt</span>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-terra);"><svg class="ic ic-sm"><use href="#i-chat" /></svg></span>
+              <div class="set-txt"><div class="set-title">Krypto-assistent</div><div class="set-desc">Din AI för säkerhetsfrågor.</div></div>
+              <span class="badge-built">Inbyggt</span>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="losenord">
+            <h2 class="set-h">Autofyll &amp; lösenord</h2>
+            <p class="set-lead mb-3">Sparade inloggningar. Vaka fyller i dem åt dig.</p>
+            <div class="flex gap-2 mb-3">
+              <input id="pw-add-origin" placeholder="https://sajt.se" class="pw-in flex-1" />
+              <input id="pw-add-user" placeholder="användare" class="pw-in" style="width:120px;" />
+              <input id="pw-add-pass" type="password" placeholder="lösenord" class="pw-in" style="width:120px;" />
+              <button id="pw-add-btn" class="btn btn-safe flex-none" style="height:40px;padding:0 14px;">Lägg till</button>
+            </div>
+            <div id="passwords-list"></div>
+          </div>
+
+          <style>
+            .fam-open { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-safe); background: rgba(23,138,90,.07); border: 1px solid rgba(23,138,90,.18); border-radius: 10px; padding: 9px 12px; }
+            .fam-open svg { flex: none; }
+            .fam-create { border: 1px dashed var(--color-line); border-radius: 16px; padding: 28px; text-align: center; }
+            .fam-create p { color: rgb(28 43 58 / .6); font-size: 13.5px; margin-bottom: 14px; }
+            .fam-in { height: 40px; border: 1px solid var(--color-line); border-radius: 10px; padding: 0 12px; font-size: 13.5px; color: var(--color-navy-900); outline: none; background: #fff; }
+            .fam-in:focus { border-color: var(--color-terra); }
+            .fam-child { border: 1px solid var(--color-line); border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; }
+            .fam-child-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+            .fam-avatar { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #5aa9e2, #2f8fd4); color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 800; flex: none; }
+            .fam-name { font-size: 15.5px; font-weight: 800; color: var(--color-navy-900); }
+            .fam-age { font-size: 12.5px; color: var(--color-navy-600); }
+            .fam-child-head .grow { flex: 1; }
+            .fam-active { font-size: 11.5px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--color-line); background: #fff; color: var(--color-navy-700); cursor: pointer; white-space: nowrap; }
+            .fam-active.on { background: var(--color-safe); color: #fff; border-color: transparent; }
+            .fam-sub { font-size: 11.5px; font-weight: 700; color: var(--color-navy-700); margin: 12px 0 7px; text-transform: uppercase; letter-spacing: .03em; }
+            .fam-bl { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 9px; }
+            .fam-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 999px; padding: 5px 6px 5px 12px; color: var(--color-navy-900); }
+            .fam-tag button { width: 18px; height: 18px; border-radius: 50%; border: 0; background: rgba(0,0,0,.06); color: var(--color-navy-700); cursor: pointer; font-size: 12px; line-height: 1; }
+            .fam-tag button:hover { background: rgba(200,60,60,.15); color: #b23636; }
+            .fam-none { font-size: 12.5px; color: rgb(28 43 58 / .45); margin-bottom: 9px; }
+            .fam-addsite { display: flex; gap: 8px; }
+            .fam-addsite .fam-in { flex: 1; }
+            .fam-krypto { font-size: 12px; color: var(--color-navy-600); margin-top: 11px; line-height: 1.5; }
+            .fam-krypto b { color: var(--color-terra); }
+            .fam-del { font-size: 12px; color: var(--color-navy-600); background: none; border: 0; cursor: pointer; margin-top: 4px; }
+            .fam-del:hover { color: #b23636; }
+            .fam-code { display: flex; align-items: center; gap: 10px; background: rgba(47,143,212,.08); border: 1px solid rgba(47,143,212,.28); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+            .fam-code .code { font-family: ui-monospace, monospace; font-size: 17px; font-weight: 800; letter-spacing: .12em; color: #1f6ea8; }
+            .fam-code button { margin-left: auto; font-size: 12px; font-weight: 700; color: #2f8fd4; background: #fff; border: 1px solid rgba(47,143,212,.35); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+            .fam-code button:hover { background: #2f8fd4; color: #fff; }
+          </style>
+          <div class="set-panel hidden" data-cat="familj">
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <div><h2 class="set-h">Familj</h2><p class="set-lead">Skydda dina barn på nätet — öppet och tillsammans.</p></div>
+              <button id="fam-add" class="btn btn-safe flex-none" style="height:40px;padding:0 15px;margin-right:38px;display:none;">+ Barn</button>
+            </div>
+            <div class="fam-open mb-4"><svg class="ic ic-sm"><use href="#i-eye" /></svg><span>Öppet, inte spionage. Barnet ser alltid att du kan se historiken — det bygger förtroende.</span></div>
+            <div id="fam-body"></div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="wallet">
+            <h2 class="set-h">Vaka Wallet</h2>
+            <p class="set-lead mb-2">Dina sparade kort. Vaka fyller i dem i kassan – med ett tryck.</p>
+            <div class="wl-secure mb-4"><svg class="ic ic-sm"><use href="#i-lock" /></svg><span>End-to-end-krypterat på din dator. Vi kan inte se dina kort – de lämnar aldrig enheten.</span></div>
+            <div id="wallet-list" class="flex flex-col gap-3"></div>
+            <button id="wallet-add-btn" class="wl-addbtn"><svg class="ic ic-sm"><use href="#i-card" /></svg>Lägg till kort</button>
+            <div style="margin-top:20px;border-top:1px solid var(--color-line);padding-top:16px;">
+              <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+                <input type="checkbox" id="wl-buy-toggle" style="margin-top:3px;width:18px;height:18px;accent-color:var(--color-safe);flex:none;">
+                <span><span style="font-weight:700;font-size:14px;color:var(--color-navy-900);">🤖 Låt Krypto handla åt mig</span><br><span style="font-size:12.5px;color:rgb(28 43 58 / .6);line-height:1.5;">Be Krypto köpa saker (t.ex. mat) med dina sparade kort. Du godkänner alltid varje köp – med en säkerhetskoll – innan betalning.</span></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="kalender">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div><h2 class="set-h">Vaka Calendar</h2><p class="set-lead">Planera din jakt — vad du ska hacka, vad du kör nu och vad du klarat.</p></div>
+              <button id="cal-add" class="btn btn-safe flex-none" style="height:40px;padding:0 15px;">+ Program</button>
+            </div>
+            <div id="cal-month" class="cal-month"></div>
+            <div id="cal-board" class="cal-board"></div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="nedladdningar">
+            <h2 class="set-h">Nedladdningar</h2>
+            <p class="set-lead mb-3">Filer sparas automatiskt i din Nedladdningar-mapp.</p>
+            <div id="downloads-list"></div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="sprak">
+            <h2 class="set-h">Språk</h2>
+            <p class="set-lead mb-3">Språk för Vakas gränssnitt.</p>
+            <div id="lang-list" class="flex flex-col gap-2"></div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="tillganglighet">
+            <h2 class="set-h">Tillgänglighet</h2>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-eye" /></svg></span>
+              <div class="set-txt"><div class="set-title">Sidzoom</div><div class="set-desc">Standardstorlek på webbsidor.</div></div>
+              <div class="seg flex-none">
+                <button id="zoom-90" class="seg-btn">90%</button>
+                <button id="zoom-100" class="seg-btn">100%</button>
+                <button id="zoom-110" class="seg-btn">110%</button>
+                <button id="zoom-125" class="seg-btn">125%</button>
+              </div>
+            </div>
+            <div class="set-row">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-shield" /></svg></span>
+              <div class="set-txt"><div class="set-title">Minska rörelse</div><div class="set-desc">Stänger av animationer i gränssnittet.</div></div>
+              <label class="switch"><input id="tgl-motion" type="checkbox" /><span class="track"></span></label>
+            </div>
+          </div>
+
+          <style>
+            .kn-card { display: flex; align-items: center; gap: 16px; background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 18px; padding: 18px 20px; margin-bottom: 18px; }
+            .kn-avatar { width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, var(--color-navy-900), #2f5f88); color: #fff; display: grid; place-items: center; font-size: 26px; font-weight: 800; flex: none; }
+            .kn-name { font-size: 18px; font-weight: 800; color: var(--color-navy-900); }
+            .kn-email { font-size: 13px; color: rgb(28 43 58 / .55); margin-top: 1px; }
+            .kn-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 800; background: color-mix(in srgb, var(--color-terra) 14%, #fff); color: var(--color-terra); }
+            .kn-rows { border: 1px solid var(--color-line); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+            .kn-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 15px; font-size: 13.5px; }
+            .kn-row + .kn-row { border-top: 1px solid var(--color-line); }
+            .kn-row .k { color: rgb(28 43 58 / .6); } .kn-row .v { color: var(--color-navy-900); font-weight: 600; text-align: right; word-break: break-word; }
+            .kn-actions { display: flex; gap: 10px; margin-bottom: 24px; }
+            .kn-danger { border: 1px solid rgba(178,54,54,.3); border-radius: 16px; padding: 16px 18px; background: rgba(178,54,54,.035); }
+            .kn-danger-h { font-size: 14px; font-weight: 800; color: #b23636; margin-bottom: 4px; }
+            .kn-danger-p { font-size: 12.5px; color: rgb(28 43 58 / .6); line-height: 1.5; margin-bottom: 12px; max-width: 460px; }
+            .kn-del-btn { height: 40px; padding: 0 16px; border-radius: 11px; border: 1px solid rgba(178,54,54,.4); background: #fff; color: #b23636; font-weight: 700; font-size: 13px; cursor: pointer; }
+            .kn-del-btn:hover { background: #b23636; color: #fff; border-color: #b23636; }
+            .kn-avatar img { width: 100%; height: 100%; object-fit: cover; }
+            .kn-uedit { margin-bottom: 18px; }
+            .kn-lbl { display: block; font-size: 12px; font-weight: 700; color: rgb(28 43 58 / .7); margin-bottom: 6px; }
+            .kn-uwrap { display: flex; align-items: center; height: 42px; border: 1px solid var(--color-line); border-radius: 11px; overflow: hidden; background: #fff; }
+            .kn-at { padding: 0 2px 0 12px; color: var(--color-navy-600); font-weight: 700; }
+            .kn-uin { flex: 1; min-width: 0; border: 0; outline: none; font-size: 14px; color: var(--color-navy-900); padding: 0 6px; background: transparent; }
+            .kn-usave { height: 100%; padding: 0 16px; border: 0; border-left: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-navy-900); font-weight: 700; font-size: 13px; cursor: pointer; }
+            .kn-usave:hover { background: var(--color-safe); color: #fff; }
+            .kn-msg { font-size: 12px; margin-top: 6px; min-height: 15px; }
+          </style>
+          <div class="set-panel hidden" data-cat="konto">
+            <h2 class="set-h">Konto</h2>
+            <p class="set-lead mb-4">Ditt Vaka-konto.</p>
+            <div id="kn-signedin">
+              <div class="kn-card">
+                <button class="kn-avatar" id="kn-avatar" type="button" title="Byt profilbild" style="border:0;padding:0;cursor:pointer;overflow:hidden;">?</button>
+                <div style="min-width:0;">
+                  <div class="kn-name" id="kn-name">—</div>
+                  <div class="kn-email" id="kn-email">—</div>
+                  <span class="kn-badge" id="kn-badge" style="display:none;">✦ Vaka Pro</span>
+                </div>
+              </div>
+              <input type="file" id="kn-avatar-file" accept="image/*" style="display:none;" />
+              <div class="kn-uedit">
+                <label class="kn-lbl">Användarnamn <span style="opacity:.55;font-weight:500;">– för vänner &amp; chatt</span></label>
+                <div class="kn-uwrap"><span class="kn-at">@</span><input id="kn-username" class="kn-uin" placeholder="dittnamn" maxlength="20" spellcheck="false" autocomplete="off" /><button id="kn-save-prof" class="kn-usave" type="button">Spara</button></div>
+                <div id="kn-prof-msg" class="kn-msg"></div>
+              </div>
+              <div class="kn-rows" id="kn-rows"></div>
+              <div class="kn-actions">
+                <button id="kn-logout" class="btn btn-ghost" style="height:42px;padding:0 20px;">Logga ut</button>
+              </div>
+              <div class="kn-danger" id="kn-danger">
+                <div class="kn-danger-h">Ta bort konto</div>
+                <p class="kn-danger-p">Detta raderar ditt konto permanent — Pro, sparade barn och inställningar försvinner. Det går inte att ångra.</p>
+                <button id="kn-delete" class="kn-del-btn">Ta bort mitt konto</button>
+              </div>
+            </div>
+            <div id="kn-signedout" style="display:none;text-align:center;padding:28px 10px;">
+              <p class="set-lead mb-4">Du är inte inloggad.</p>
+              <button id="kn-login" class="btn btn-safe" style="height:44px;padding:0 22px;">Logga in</button>
+            </div>
+          </div>
+
+          <style>
+            .fr-add { display: flex; gap: 8px; margin-bottom: 16px; }
+            .fr-sub { font-size: 11.5px; font-weight: 700; color: var(--color-navy-700); text-transform: uppercase; letter-spacing: .03em; margin: 14px 0 8px; }
+            .fr-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--color-line); border-radius: 13px; padding: 9px 12px; margin-bottom: 8px; }
+            .fr-open { cursor: pointer; } .fr-open:hover { border-color: #2f8fd4; background: rgba(47,143,212,.04); }
+            .fr-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+            .fr-name { font-size: 14px; font-weight: 700; color: var(--color-navy-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .fr-fam { width: 38px; height: 38px; border-radius: 50%; background: #eaf3fb; display: grid; place-items: center; font-size: 19px; flex: none; }
+            .fr-go { color: var(--color-navy-600); font-size: 20px; flex: none; }
+            .fr-none { font-size: 12.5px; color: rgb(28 43 58 / .45); padding: 4px 2px; }
+            .fr-note { font-size: 13px; color: rgb(28 43 58 / .65); background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; line-height: 1.5; }
+            .fr-acc { height: 32px; padding: 0 12px; border-radius: 9px; border: 0; background: var(--color-safe); color: #fff; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+            .fr-dec { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--color-line); background: #fff; color: var(--color-navy-700); cursor: pointer; }
+            .fr-chat-head { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--color-line); margin-bottom: 10px; }
+            .fr-chat-head span { font-size: 15px; font-weight: 800; color: var(--color-navy-900); }
+            .fr-back { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--color-line); background: #fff; font-size: 20px; color: var(--color-navy-900); cursor: pointer; line-height: 1; flex: none; }
+            .fr-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; }
+            .fr-msg { display: flex; gap: 8px; align-items: flex-end; max-width: 82%; }
+            .fr-msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+            .fr-bub { background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 14px; padding: 7px 12px; font-size: 13.5px; color: var(--color-navy-900); word-break: break-word; }
+            .fr-msg.mine .fr-bub { background: #2f8fd4; border-color: transparent; color: #fff; }
+            .fr-bub-name { font-size: 10.5px; font-weight: 700; opacity: .7; margin-bottom: 1px; }
+            .fr-msg.mine .fr-bub-name { display: none; }
+            .fr-send { display: flex; gap: 8px; margin-top: 10px; }
+            .fr-chat-av { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--color-line); background: #eaf3fb; display: grid; place-items: center; font-size: 17px; cursor: pointer; overflow: hidden; flex: none; padding: 0; }
+            .fr-ed { font-size: 10.5px; opacity: .6; }
+            .fr-edit-in { border: 0; background: rgba(255,255,255,.3); color: inherit; border-radius: 6px; padding: 2px 6px; outline: none; font-size: 13.5px; width: 180px; max-width: 55vw; }
+            .fr-allow { display: block; margin-top: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 0; background: var(--color-safe); color: #fff; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+            .fr-allow:hover { filter: brightness(1.05); } .fr-allow:disabled { opacity: .7; cursor: default; }
+          </style>
+          <div class="set-panel hidden" data-cat="vanner">
+            <h2 class="set-h">Vänner &amp; chatt</h2>
+            <p class="set-lead mb-4">Lägg till vänner med användarnamn och chatta – ni ses bara som era användarnamn, inga riktiga namn.</p>
+            <div id="fr-list"><div id="fr-body"></div></div>
+            <div id="fr-chat" style="display:none;flex-direction:column;height:430px;">
+              <div class="fr-chat-head"><button id="fr-back" class="fr-back" type="button">‹</button><button id="fr-chat-av" class="fr-chat-av" type="button" title="Byt chattbild">👪</button><span id="fr-chat-title">Chatt</span></div>
+              <input type="file" id="fr-chat-av-file" accept="image/*" style="display:none;">
+              <div id="fr-msgs" class="fr-msgs"></div>
+              <div class="fr-send"><input id="fr-send-in" class="fam-in" placeholder="Skriv ett meddelande…" style="flex:1;" /><button id="fr-send-btn" class="btn btn-safe flex-none" type="button" style="height:40px;padding:0 16px;">Skicka</button></div>
+            </div>
+          </div>
+
+          <div class="set-panel hidden" data-cat="om">
+            <h2 class="set-h">Om</h2>
+            <div class="flex items-center gap-3 mt-2">
+              <span class="grid place-items-center w-12 h-12 rounded-2xl flex-none" style="background:var(--color-navy-900);color:#fff;"><svg class="ic"><use href="#i-shield" /></svg></span>
+              <div><div class="text-[15px] font-extrabold text-navy-900">Vaka</div><div class="text-[12.5px]" style="color:rgb(28 43 58 / .5);">Version 0.1.0 · byggd på Chromium (Electron)</div></div>
+            </div>
+            <p class="set-lead mt-4" style="max-width:400px;">En trygg svensk webbläsare med inbyggt bluffskydd, annonsblockerare och privat läge.</p>
+            <div class="set-row mt-4">
+              <span class="set-ico" style="color:var(--color-navy-700);"><svg class="ic ic-sm"><use href="#i-globe" /></svg></span>
+              <div class="set-txt"><div class="set-title">Standardwebbläsare</div><div class="set-desc" id="defbrowser-desc">Öppna länkar från andra program i Vaka.</div></div>
+              <button id="defbrowser-btn" class="pill flex-none" style="height:34px;">Sätt som standard</button>
+            </div>
+            <button id="settings-reset" class="btn btn-risk mt-5" style="height:42px;">Återställ inställningarna</button>
+          </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Bakgrundsväljare -->
+    <div id="bgpick" class="hidden absolute inset-0 z-[70] grid place-items-center p-6" style="background:linear-gradient(160deg,#0e2a47,#14375c);">
+      <div class="w-full max-w-[560px] bg-white rounded-[20px] px-7 py-6 shadow-[0_30px_80px_rgba(0,0,0,.45)] relative">
+        <button id="bgpick-close" class="absolute top-3.5 right-3.5 icon-btn w-8 h-8" style="color:var(--color-navy-900);"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+        <h1 class="text-[20px] font-extrabold text-navy-900">Bakgrund</h1>
+        <p class="text-[13px] text-navy-900/50 mt-1 mb-4">Välj en av Vakas bakgrunder eller ladda upp din egen.</p>
+        <div id="bg-grid" class="grid grid-cols-4 gap-2.5"></div>
+        <div class="flex gap-2.5 mt-5">
+          <button id="bg-upload-btn" class="btn btn-safe flex-1" style="height:44px;"><svg class="ic ic-sm"><use href="#i-upload" /></svg>Ladda upp egen</button>
+          <button id="bg-daily" class="btn flex-1" style="height:44px;background:var(--color-paper);color:var(--color-navy-900);">Dagens bild</button>
+        </div>
+        <input id="bg-file" type="file" accept="image/*" style="display:none;" />
+      </div>
+    </div>
+
+    <!-- Historik-panel (vänster) -->
+    <div id="history" class="hidden absolute top-0 left-0 bottom-0 bg-white" style="width:320px;z-index:65;box-shadow:6px 0 24px rgba(14,42,71,.15);">
+      <div class="flex items-center justify-between px-4 h-12 border-b" style="border-color:var(--color-line);">
+        <div class="flex items-center gap-2 text-[14px] font-bold text-navy-900"><svg class="ic ic-sm"><use href="#i-history" /></svg>Historik</div>
+        <div class="flex items-center gap-1">
+          <button id="history-clear" title="Rensa all historik" style="display:flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:8px;border:1px solid var(--color-line);background:#fff;color:var(--color-navy-700);font-size:12px;font-weight:700;cursor:pointer;"><svg class="ic" style="width:13px;height:13px"><use href="#i-trash" /></svg><span id="history-clear-txt">Rensa allt</span></button>
+          <button id="history-close" class="icon-btn w-8 h-8" style="color:var(--color-navy-900);"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+        </div>
+      </div>
+      <div id="history-list" class="overflow-y-auto" style="height:calc(100% - 48px);"></div>
+    </div>
+
+    <!-- Bokmärken -->
+    <div id="bookmarks" class="hidden absolute inset-0 z-[70] grid place-items-center p-6" style="background:linear-gradient(160deg,#0e2a47,#14375c);">
+      <div class="w-full max-w-[480px] bg-white rounded-[20px] px-7 py-6 shadow-[0_30px_80px_rgba(0,0,0,.45)] relative" style="max-height:82%;display:flex;flex-direction:column;">
+        <button id="bookmarks-close" class="absolute top-3.5 right-3.5 icon-btn w-8 h-8" style="color:var(--color-navy-900);"><svg class="ic ic-sm"><use href="#i-close" /></svg></button>
+        <h1 class="text-[20px] font-extrabold text-navy-900">Bokmärken</h1>
+        <p class="text-[13px] text-navy-900/50 mt-1 mb-3">Sidor du sparat med stjärnan i adressfältet.</p>
+        <div id="bookmarks-list" class="overflow-y-auto" style="margin:0 -12px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="worldmap.js"></script>
+  <script src="shell.js"></script>
+</body>
+</html>

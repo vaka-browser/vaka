@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://js.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com; connect-src https://api.stripe.com https://m.stripe.network https://r.stripe.com https://q.stripe.com https://merchant-ui-api.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.stripe.com;" />
+<title>Kassa</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --accent: #e08a62; --accent-deep: #c2643f; --ink: #f2f2f4; --dim: #9a9ca3; --card: #151517; --card-2: #1b1b1e; --line: #26262a; }
+  html, body { height: 100%; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif; color: var(--ink); background: radial-gradient(90% 40% at 50% -10%, rgba(224,138,98,.16), transparent 70%), #0b0b0d; min-height: 100%; padding: 22px 20px 26px; overflow-y: auto; -webkit-font-smoothing: antialiased; }
+  .top { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .back { width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center; color: #c9ccd2; background: rgba(255,255,255,.06); text-decoration: none; }
+  .back:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .back svg { width: 16px; height: 16px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+  .brand .mark { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 6px 18px rgba(224,138,98,.35); }
+  .brand .mark svg { width: 15px; height: 15px; }
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+  .lead { margin-top: 6px; font-size: 13px; color: var(--dim); line-height: 1.5; }
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .plan { position: relative; text-align: left; padding: 12px 12px 11px; border-radius: 14px; background: var(--card-2); border: 1px solid #2e2e33; color: var(--ink); cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+  .plan:hover { border-color: #3b3b40; }
+  .plan.on { border-color: var(--accent); background: #1e1e22; box-shadow: 0 0 0 3px rgba(224,138,98,.16); }
+  .plan .n, .plan .p { display: block; }
+  .plan .n { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8d8f97; }
+  .plan.on .n { color: #f2b795; }
+  .plan .p { margin-top: 5px; font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+  .plan .p small { font-size: 12px; font-weight: 600; color: var(--dim); letter-spacing: 0; }
+  .plan .save { position: absolute; top: -8px; right: 10px; padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #2a1409; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); }
+  .box { margin-top: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 14px 14px; }
+  .box h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--accent); font-weight: 700; margin-bottom: 12px; }
+  #payment-element { min-height: 120px; }
+  .loading { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 13px; padding: 14px 2px; }
+  .spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.12); border-top-color: var(--accent); animation: spin .8s linear infinite; flex: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .err { display: none; margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 600; color: #ff8a84; background: rgba(214,75,69,.12); border: 1px solid rgba(214,75,69,.3); }
+  .err.on { display: block; }
+  .pay { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; margin-top: 14px; border: 0; border-radius: 14px; font-size: 15px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); box-shadow: 0 10px 26px rgba(194,100,63,.32); transition: transform .15s, box-shadow .15s, filter .15s, opacity .15s; font-family: inherit; }
+  .pay:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .pay:disabled { opacity: .55; pointer-events: none; }
+  .secure { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 11.5px; color: #6f7280; line-height: 1.5; }
+  .secure svg { width: 14px; height: 14px; flex: none; margin-top: 2px; color: #6fd39a; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--dim); padding: 8px 0; border-top: 1px solid var(--line); }
+  .row b { color: var(--ink); font-size: 14px; }
+  .row.total b { font-size: 16px; }
+  .sum { margin-top: 14px; }
+  .done { display: none; text-align: center; padding-top: 28px; }
+  .done .ok { width: 68px; height: 68px; border-radius: 22px; margin: 0 auto 16px; display: grid; place-items: center; color: #6fd39a; background: rgba(47,158,103,.14); border: 1px solid rgba(47,158,103,.35); }
+  .done .ok svg { width: 30px; height: 30px; }
+  .done p { margin-top: 8px; font-size: 13.5px; color: var(--dim); line-height: 1.5; }
+  .done .pay { margin-top: 22px; text-decoration: none; }
+  body.paid .checkout { display: none; }
+  body.paid .done { display: block; }
+  .credits-note { margin-top: 12px; font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="https://krypto.local/back" title="Tillbaka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span data-brand>Vaka</span></div>
+  </div>
+
+  <div class="checkout">
+    <h1 id="title">Skaffa Pro</h1>
+    <p class="lead" id="lead">Krypto och allt annat i Pro låses upp på ditt konto direkt efter betalningen.</p>
+
+    <div class="plans" id="plans">
+      <button type="button" class="plan on" data-plan="pro_month"><span class="n">Månad</span><span class="p">79 kr <small>/ mån</small></span></button>
+      <button type="button" class="plan" data-plan="pro_year"><span class="save">Spara 17%</span><span class="n">År</span><span class="p">1 090 kr <small>/ år</small></span></button>
+    </div>
+    <p class="credits-note" id="credits-note" style="display:none;">Extra credits fyller på Krypto med <b style="color:var(--ink)">1 000 000 tokens</b> som gäller utöver månadstaket.</p>
+
+    <div class="box">
+      <h2>Betalning</h2>
+      <div id="loading" class="loading"><span class="spin"></span><span>Förbereder säker betalning …</span></div>
+      <div id="payment-element"></div>
+      <div id="err" class="err"></div>
+      <div class="sum" id="sum" style="display:none;">
+        <div class="row total"><span id="sum-label">Att betala</span><b id="sum-amount">79 kr</b></div>
+      </div>
+      <button id="pay" class="pay" type="button" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span id="pay-label">Betala 79 kr</span></button>
+      <div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span>Kortuppgifterna går direkt till Stripe och når aldrig oss.<span id="secure-sub"> Abonnemanget kan sägas upp när som helst.</span></span></div>
+    </div>
+  </div>
+
+  <div class="done">
+    <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h1 id="done-title">Pro är aktiverat</h1>
+    <p id="done-text">Tack! Krypto och allt annat i Pro är upplåst på ditt konto.</p>
+    <a class="pay" href="https://krypto.local/recheck">Öppna Krypto</a>
+  </div>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="checkout.js"></script>
+</body>
+</html>

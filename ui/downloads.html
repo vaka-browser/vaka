@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  .card { margin: 8px 10px 16px 10px; background: #fff; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 20px 48px rgba(14,42,71,.30), 0 4px 12px rgba(14,42,71,.12);
+    border: 1px solid #e7ecf2; animation: pop .18s cubic-bezier(.2,.8,.2,1); transform-origin: top right; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
+  .head { display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 10px 13px 18px; }
+  .head h1 { font-size: 14.5px; font-weight: 750; color: #0e2a47; margin: 0; letter-spacing: -.015em; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { width: 20px; height: 20px; border-radius: 50%; border: 2.4px solid #d7e3f2;
+    border-top-color: #2f8fd4; animation: spin .7s linear infinite; }
+  .warn .spin { border-color: #f6d3d3; border-top-color: #d13b3b; }
+  .x { border: 0; background: transparent; cursor: pointer; color: #8394a6; width: 28px; height: 28px;
+    border-radius: 8px; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+  .x:hover { background: #f1f5f9; color: #0e2a47; }
+  .list { max-height: 380px; overflow-y: auto; padding: 6px 8px 8px; }
+  .empty { padding: 26px 16px; text-align: center; color: #8ba3bf; font-size: 13px; }
+  .row { display: flex; gap: 12px; align-items: center; padding: 11px 12px; border-radius: 12px;
+    cursor: default; }
+  .row.open { cursor: pointer; }
+  .row.open:hover { background: #f4f7fa; }
+  .ico { flex: none; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+    background: #eef4fb; color: #2f6db0; }
+  .ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9;
+    stroke-linecap: round; stroke-linejoin: round; }
+  .ico.done { background: #e6f7ee; color: #12925a; }
+  .ico.warn { background: #fdecec; color: #d13b3b; }
+  .meta { flex: 1; min-width: 0; }
+  .name { font-size: 13px; font-weight: 600; color: #0e2a47; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .sub { font-size: 11.5px; color: #6b7d8f; margin-top: 2px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .sub.warn { color: #d13b3b; font-weight: 600; }
+  .sub.done { color: #12925a; }
+  .bar { height: 5px; border-radius: 999px; background: #e6ecf3; margin-top: 7px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 999px; background: #2f8fd4;
+    transition: width .2s ease; }
+  .fbtn { flex: none; border: 0; background: transparent; cursor: pointer; color: #8394a6;
+    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; }
+  .fbtn:hover { background: #eef2f6; color: #0e2a47; }
+  .fbtn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <h1>Nedladdningar</h1>
+      <button class="x" id="close" title="Stäng">&times;</button>
+    </div>
+    <div class="list" id="list"><div class="empty">Inga nedladdningar än.</div></div>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    const list = document.getElementById('list');
+    let hovered = false, idleTimer = null, data = [];
+
+    const ICO_DL = '<svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 19h14"/></svg>';
+    const ICO_DOC = '<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>';
+    const ICO_WARN = '<svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg>';
+    const ICO_FOLDER = '<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+
+    function fmt(n) { if (!n) return '0 B'; const u = ['B','KB','MB','GB']; let i = 0;
+      while (n >= 1024 && i < 3) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0).replace('.', ',') + ' ' + u[i]; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+    function render() {
+      list.innerHTML = '';
+      if (!data.length) { list.innerHTML = '<div class="empty">Inga nedladdningar än.</div>'; return; }
+      data.forEach((d) => {
+        const prog = d.state === 'progressing', scan = d.state === 'scanning';
+        const infected = d.state === 'infected', removed = d.state === 'deleted';
+        const done = d.state === 'completed';
+        const failed = d.state === 'cancelled' || d.state === 'interrupted';
+        const row = document.createElement('div');
+        row.className = 'row' + (done ? ' open' : '');
+
+        let icoCls = 'ico', ico = ICO_DL, sub = '', subCls = 'sub', pct = 0;
+        if (prog) {
+          pct = d.total > 0 ? Math.round(d.received / d.total * 100) : 0;
+          sub = d.total > 0 ? (fmt(d.received) + ' / ' + fmt(d.total) + ' · ' + pct + '%') : (fmt(d.received) + ' hämtat…');
+          ico = '<div class="spin"></div>';
+        } else if (scan) { sub = 'Skannar efter virus…'; ico = '<div class="spin"></div>'; }
+        else if (infected) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = '⚠ Blockerad — ' + (d.threat || 'hot'); }
+        else if (removed) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = 'Borttagen (virus)'; }
+        else if (done) { icoCls = 'ico done'; ico = ICO_DOC; subCls = 'sub done';
+          sub = (d.total > 0 ? fmt(d.total) + ' · ' : '') + (d.scan === 'overridden' ? 'Klar (behållen)' : (d.scan === 'clean' ? 'Säker ✓' : 'Klar')); }
+        else if (failed) { sub = d.state === 'cancelled' ? 'Avbruten' : 'Misslyckades'; }
+
+        row.innerHTML =
+          '<span class="' + icoCls + '">' + ico + '</span>' +
+          '<div class="meta"><div class="name">' + esc(d.filename) + '</div>' +
+          '<div class="' + subCls + '">' + esc(sub) + '</div>' +
+          (prog ? '<div class="bar"><i style="width:' + pct + '%"></i></div>' : '') + '</div>' +
+          (done ? '<button class="fbtn" title="Visa i mapp" data-folder="' + d.id + '">' + ICO_FOLDER + '</button>' : '');
+
+        if (done) row.addEventListener('click', (ev) => {
+          if (ev.target.closest('[data-folder]')) return;
+          ipcRenderer.send('dl:open', d.id);
+        });
+        const fb = row.querySelector('[data-folder]');
+        if (fb) fb.addEventListener('click', (ev) => { ev.stopPropagation(); ipcRenderer.send('dl:folder', d.id); });
+        list.appendChild(row);
+      });
+    }
+
+    function scheduleIdleClose() {
+      clearTimeout(idleTimer);
+      const anyActive = data.some((d) => d.state === 'progressing' || d.state === 'scanning');
+      if (anyActive || hovered) return;
+      idleTimer = setTimeout(() => ipcRenderer.send('dl:popup-close'), 6000);
+    }
+
+    // Rapportera kortets höjd → huvudprocessen krymper vyn till innehållet (ingen osynlig klick-döda-zon).
+    function reportSize() { try { const c = document.querySelector('.card'); if (c) ipcRenderer.send('dl:popup-size', Math.ceil(c.getBoundingClientRect().bottom) + 16); } catch (e) {} }
+    ipcRenderer.on('dl-data', (_e, arr) => { data = Array.isArray(arr) ? arr : []; render(); reportSize(); scheduleIdleClose(); });
+    document.getElementById('close').onclick = () => ipcRenderer.send('dl:popup-close');
+    document.body.addEventListener('mouseenter', () => { hovered = true; clearTimeout(idleTimer); }, true);
+    document.body.addEventListener('mouseleave', () => { hovered = false; scheduleIdleClose(); }, true);
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+! Vaka egna undantag — sajter som våra scriptlets kraschar.
+! 2026-08-17: chatgpt.com fick "RangeError: Maximum call stack size exceeded"
+! (Proxy-apply-rekursion) av injicerade scriptlets (json-prune mot deras annonser
+! + no-fetch-if mot telemetri) i den inloggade appen. Tomt +js() stänger av ALLA
+! scriptlets för domänen; nätverksblockering och element-göm-regler påverkas inte,
+! så deras annons-XHR ($xhr-regeln mot backend-api/bazaar) blockeras fortfarande.
+chatgpt.com#@#+js()
+! 2026-08-18: YouTube blev helt tom (sök/startsida renderade aldrig, "laddar för evigt").
+! uBlock-regeln no-setTimeout-if ()\,a\,b måste döda YouTubes 5s anti-adblock-paus,
+! men på ES5-reservsidan som vår Chromium 130 får serverad matchar mönstret även
+! den LEGITIMA rendering-timeouten → sidan dör. Bara denna regel undantas;
+! övriga annons-avväpnare (json-prune, trusted-replace m.fl.) behålls.
+www.youtube.com#@#+js(no-setTimeout-if, ()\,a\,b), 5000)
+! 2026-08-30: Netflix "laddar för evigt" på /browse (efter profilval). Vår adblock
+! blockerade OneTrusts cookie-consent-SDK (otBannerSdk.js + geolocation.onetrust.com)
+! som Netflix EU-sidan väntar på innan grid:en renderas → evig spinner. Även Netflix
+! egna funktionella /log-anrop blockerades. Undantar dessa FÖR netflix.com (endast);
+! trackers på andra sajter blockeras fortfarande. DRM/Widevine var aldrig problemet.
+@@||onetrust.com^$domain=netflix.com
+@@||cookielaw.org^$domain=netflix.com
+@@||nflxext.com^$domain=netflix.com
+@@||netflix.com/log/$domain=netflix.com
+@@||logs.netflix.com^$domain=netflix.com
+! 2026-08-30 (forts): DEN RIKTIGA orsaken till Netflix "laddar för evigt" efter
+! profilval: våra injicerade scriptlets (json-prune/no-fetch-if m.fl.) hamnar i
+! oändlig Proxy.apply-rekursion på netflix.com → "RangeError: Maximum call stack
+! size exceeded" som dödar Netflix JS-motor → browse renderar aldrig. Samma bugg
+! som chatgpt.com ovan. Tomt +js() stänger av ALLA scriptlets för netflix.com;
+! nätverksblockering + element-göm behålls.
+netflix.com#@#+js()
+www.netflix.com#@#+js()
