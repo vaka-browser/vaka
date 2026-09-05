@@ -64,6 +64,9 @@
     const ICO_DL = '<svg viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 19h14"/></svg>';
     const ICO_DOC = '<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>';
     const ICO_WARN = '<svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg>';
+    const ICO_PAUSE = '<svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg>';
+    const ICO_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+    const ICO_X = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
     const ICO_FOLDER = '<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
 
     function fmt(n) { if (!n) return '0 B'; const u = ['B','KB','MB','GB']; let i = 0;
@@ -74,7 +77,8 @@
       list.innerHTML = '';
       if (!data.length) { list.innerHTML = '<div class="empty">Inga nedladdningar än.</div>'; return; }
       data.forEach((d) => {
-        const prog = d.state === 'progressing', scan = d.state === 'scanning';
+        const paused = d.state === 'paused';
+        const prog = d.state === 'progressing' || paused, scan = d.state === 'scanning';
         const infected = d.state === 'infected', removed = d.state === 'deleted';
         const done = d.state === 'completed';
         const failed = d.state === 'cancelled' || d.state === 'interrupted';
@@ -85,7 +89,8 @@
         if (prog) {
           pct = d.total > 0 ? Math.round(d.received / d.total * 100) : 0;
           sub = d.total > 0 ? (fmt(d.received) + ' / ' + fmt(d.total) + ' · ' + pct + '%') : (fmt(d.received) + ' hämtat…');
-          ico = '<div class="spin"></div>';
+          ico = paused ? ICO_PAUSE : '<div class="spin"></div>';
+          if (paused) sub = 'Pausad · ' + sub;
         } else if (scan) { sub = 'Skannar efter virus…'; ico = '<div class="spin"></div>'; }
         else if (infected) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = '⚠ Blockerad — ' + (d.threat || 'hot'); }
         else if (removed) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = 'Borttagen (virus)'; }
@@ -98,12 +103,17 @@
           '<div class="meta"><div class="name">' + esc(d.filename) + '</div>' +
           '<div class="' + subCls + '">' + esc(sub) + '</div>' +
           (prog ? '<div class="bar"><i style="width:' + pct + '%"></i></div>' : '') + '</div>' +
-          (done ? '<button class="fbtn" title="Visa i mapp" data-folder="' + d.id + '">' + ICO_FOLDER + '</button>' : '');
+          (done ? '<button class="fbtn" title="Visa i mapp" data-folder="' + d.id + '">' + ICO_FOLDER + '</button>' : '') +
+          (prog ? '<button class="fbtn" title="' + (paused ? 'Fortsätt' : 'Pausa') + '" data-toggle="' + d.id + '">' + (paused ? ICO_PLAY : ICO_PAUSE) + '</button><button class="fbtn" title="Avbryt" data-cancel="' + d.id + '">' + ICO_X + '</button>' : '');
 
         if (done) row.addEventListener('click', (ev) => {
           if (ev.target.closest('[data-folder]')) return;
           ipcRenderer.send('dl:open', d.id);
         });
+        const tb = row.querySelector('[data-toggle]');
+        if (tb) tb.addEventListener('click', (ev) => { ev.stopPropagation(); ipcRenderer.send(paused ? 'dl:resume' : 'dl:pause', d.id); });
+        const cb = row.querySelector('[data-cancel]');
+        if (cb) cb.addEventListener('click', (ev) => { ev.stopPropagation(); ipcRenderer.send('dl:cancel', d.id); });
         const fb = row.querySelector('[data-folder]');
         if (fb) fb.addEventListener('click', (ev) => { ev.stopPropagation(); ipcRenderer.send('dl:folder', d.id); });
         list.appendChild(row);
@@ -112,7 +122,7 @@
 
     function scheduleIdleClose() {
       clearTimeout(idleTimer);
-      const anyActive = data.some((d) => d.state === 'progressing' || d.state === 'scanning');
+      const anyActive = data.some((d) => d.state === 'progressing' || d.state === 'paused' || d.state === 'scanning');
       if (anyActive || hovered) return;
       idleTimer = setTimeout(() => ipcRenderer.send('dl:popup-close'), 6000);
     }

@@ -883,6 +883,7 @@ const CLAMSCAN = ['/usr/bin/clamscan', '/usr/local/bin/clamscan'].find((p) => { 
 const QUARANTINE = path.join(app.getPath('userData'), 'quarantine');
 try { fs.mkdirSync(QUARANTINE, { recursive: true }); } catch {}
 const downloads = [];
+const dlItems = new Map();   // id → DownloadItem (för paus/fortsätt/avbryt medan den pågår)
 /* Fingeravtryck (SHA-256) av en färdig fil — det enda som skickas till molnet. */
 function sha256File(file) {
   return new Promise((resolve) => {
@@ -954,12 +955,14 @@ function trackDownloads(sess) {
     const id = 'd' + Date.now() + Math.floor(Math.random() * 1000);
     const savePath = path.join(app.getPath('downloads'), item.getFilename());
     try { item.setSavePath(savePath); } catch {}
+    dlItems.set(id, item);
     const rec = { id, filename: item.getFilename(), url: item.getURL(), path: savePath, total: item.getTotalBytes(), received: 0, state: 'progressing', scan: null };
     downloads.unshift(rec);
     broadcast('download-update', rec);
     try { const fw = BrowserWindow.getFocusedWindow(); let c = fw ? wins.get(fw.webContents.id) : null; if (!c) c = wins.values().next().value; if (c) openDlPopup(c); } catch {}
-    item.on('updated', (_e2, state) => { rec.received = item.getReceivedBytes(); rec.state = state; broadcast('download-update', rec); });
+    item.on('updated', (_e2, state) => { rec.received = item.getReceivedBytes(); rec.total = item.getTotalBytes() || rec.total; rec.state = item.isPaused() ? 'paused' : state; broadcast('download-update', rec); });
     item.once('done', (_e2, state) => {
+      dlItems.delete(id);
       rec.received = item.getReceivedBytes();
       if (state === 'completed') scanDownload(rec);
       else { rec.state = state; broadcast('download-update', rec); }
@@ -967,6 +970,10 @@ function trackDownloads(sess) {
   });
 }
 ipcMain.handle('dl:list', () => downloads);
+/* Paus / fortsätt / avbryt en pågående nedladdning (knappar i popupen och i Inställningar › Nedladdningar). */
+ipcMain.on('dl:pause', (_e, id) => { const it = dlItems.get(id), r = downloads.find((d) => d.id === id); if (!it || !r) return; try { if (!it.isPaused()) it.pause(); } catch {} r.state = 'paused'; broadcast('download-update', r); });
+ipcMain.on('dl:resume', (_e, id) => { const it = dlItems.get(id), r = downloads.find((d) => d.id === id); if (!it || !r) return; try { if (it.canResume()) it.resume(); } catch {} r.state = 'progressing'; broadcast('download-update', r); });
+ipcMain.on('dl:cancel', (_e, id) => { const it = dlItems.get(id), r = downloads.find((d) => d.id === id); if (!r) return; try { if (it) it.cancel(); } catch {} dlItems.delete(id); r.state = 'cancelled'; broadcast('download-update', r); });
 ipcMain.on('dl:popup-toggle', (e) => { const ctx = wins.get(e.sender.id); if (!ctx) return; if (ctx.dlView) closeDlPopup(ctx); else openDlPopup(ctx); });
 ipcMain.on('dl:popup-close', (e) => { const ctx = [...wins.values()].find((c) => c.dlView && !c.dlView.webContents.isDestroyed() && c.dlView.webContents === e.sender); if (ctx) closeDlPopup(ctx); });
 ipcMain.on('dl:popup-size', (e, h) => { const ctx = [...wins.values()].find((c) => c.dlView && !c.dlView.webContents.isDestroyed() && c.dlView.webContents === e.sender); if (ctx && typeof h === 'number') positionDlPopup(ctx, Math.round(h)); });

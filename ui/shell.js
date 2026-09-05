@@ -1768,15 +1768,19 @@ function renderDownloads() {
     const done = d.state === 'completed';
     const scanning = d.state === 'scanning', infected = d.state === 'infected', removed = d.state === 'deleted';
     let status, col = '#8ba3bf';
-    if (d.state === 'progressing') status = `${fmtBytes(d.received)} / ${fmtBytes(d.total)}`;
+    const paused = d.state === 'paused', prog = d.state === 'progressing' || paused;
+    if (prog) status = (paused ? 'Pausad · ' : '') + `${fmtBytes(d.received)} / ${fmtBytes(d.total)}`;
     else if (scanning) { status = 'Skannar efter virus…'; col = 'var(--color-terra)'; }
     else if (infected) { status = '⚠ Blockerad — ' + (d.threat || 'hot'); col = 'var(--color-danger)'; }
     else if (removed) { status = 'Borttagen (virus)'; col = 'var(--color-danger)'; }
     else if (done) { status = d.scan === 'overridden' ? 'Klar (behållen trots varning)' : (d.scan === 'clean' ? 'Säker ✓' : 'Klar'); col = 'var(--color-safe)'; }
     else { status = d.state === 'cancelled' ? 'Avbruten' : 'Misslyckades'; }
     const useIco = infected || removed ? 'i-shield-x' : (scanning ? 'i-shield' : 'i-download');
-    row.innerHTML = `<span class="hist-fav" style="display:grid;place-items:center;color:${col}"><svg class="ic ic-sm"><use href="#${useIco}" /></svg></span><div class="hist-txt"><div class="hist-title">${escapeHtml(d.filename)}</div><div class="hist-url" style="color:${infected || removed ? 'var(--color-danger)' : ''}">${escapeHtml(status)}</div></div>` + (done ? `<button class="row-btn" title="Visa i mapp"><svg class="ic ic-sm"><use href="#i-folder" /></svg></button>` : '');
+    row.innerHTML = `<span class="hist-fav" style="display:grid;place-items:center;color:${col}"><svg class="ic ic-sm"><use href="#${useIco}" /></svg></span><div class="hist-txt"><div class="hist-title">${escapeHtml(d.filename)}</div><div class="hist-url" style="color:${infected || removed ? 'var(--color-danger)' : ''}">${escapeHtml(status)}</div></div>` + (done ? `<button class="row-btn" title="Visa i mapp"><svg class="ic ic-sm"><use href="#i-folder" /></svg></button>` : '')
+      + (prog ? `<button class="row-btn dl-toggle" title="${paused ? 'Fortsätt' : 'Pausa'}"><svg class="ic ic-sm" viewBox="0 0 24 24">${paused ? '<path d="M8 5v14l11-7z"/>' : '<path d="M9 5v14M15 5v14"/>'}</svg></button><button class="row-btn dl-cancel" title="Avbryt"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : '');
     if (done) { const b = row.querySelector('.row-btn'); if (b) b.addEventListener('click', () => window.dl.folder(d.id)); }
+    const tb = row.querySelector('.dl-toggle'); if (tb) tb.addEventListener('click', () => paused ? window.dl.resume(d.id) : window.dl.pause(d.id));
+    const cb = row.querySelector('.dl-cancel'); if (cb) cb.addEventListener('click', () => window.dl.cancel(d.id));
     list.appendChild(row);
   });
 }
@@ -1785,7 +1789,7 @@ function updateDlButton() {
   const btn = $('dl-btn'); if (!btn) return;
   const items = [...dlMap.values()];
   if (items.length) btn.style.display = '';
-  const active = items.filter((d) => d.state === 'progressing' || d.state === 'scanning').length;
+  const active = items.filter((d) => d.state === 'progressing' || d.state === 'paused' || d.state === 'scanning').length;
   const badge = $('dl-badge');
   if (badge) {
     if (active > 0) { badge.textContent = String(active); badge.style.display = ''; btn.classList.add('dl-busy'); }

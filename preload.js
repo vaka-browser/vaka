@@ -101,6 +101,9 @@ contextBridge.exposeInMainWorld('dl', {
   popupToggle: () => ipcRenderer.send('dl:popup-toggle'),
   removeThreat: (id) => ipcRenderer.send('dl:remove-threat', id),
   keepAnyway: (id) => ipcRenderer.send('dl:keep-anyway', id),
+  pause: (id) => ipcRenderer.send('dl:pause', id),
+  resume: (id) => ipcRenderer.send('dl:resume', id),
+  cancel: (id) => ipcRenderer.send('dl:cancel', id),
   onUpdate: (cb) => ipcRenderer.on('download-update', (_e, r) => cb(r)),
   onThreat: (cb) => ipcRenderer.on('download-threat', (_e, t) => cb(t)),
 });
