@@ -66,7 +66,13 @@ function ctxFor(event) { return wins.get(event.sender.id); }
  * GNOME på Wayland släpper helskärmsflaggan när fönstret tappar fokus till en
  * annan skärm, och Chromium lyder. fullWanted är vad användaren vill; allt som
  * avviker från det utan att vara begärt sätts tillbaka (se leave-full-screen). */
-function setFull(ctx, want) { ctx.fullWanted = !!want; try { ctx.win.setFullScreen(!!want); } catch {} }
+function setFull(ctx, want) {
+  ctx.fullWanted = !!want;
+  // macOS: fönstret är normalt inte "fullscreenable" (gröna knappen maximerar då). Helskärm på
+  // begäran (F11/meny/sidans video) slår på det tillfälligt; leave-full-screen stänger av igen.
+  if (want && process.platform === 'darwin') { try { ctx.win.setFullScreenable(true); } catch {} }
+  try { ctx.win.setFullScreen(!!want); } catch {}
+}
 function toggleFull(ctx) { setFull(ctx, !ctx.win.isFullScreen()); }
 function sendTo(ctx, ...a) { if (ctx && ctx.win && !ctx.win.isDestroyed()) ctx.win.webContents.send(...a); }
 function broadcast(...a) { wins.forEach((ctx) => sendTo(ctx, ...a)); if (a[0] === 'download-update') pushDownloadPopups(); }
@@ -1370,7 +1376,7 @@ function createWindow(incognito) {
     // vänster. Windows/Linux: ramlöst fönster – skalet ritar minimera/maximera/stäng själv
     // längst till höger i flikraden (#winctl) och pratar med oss via win:minimize/toggle-max/close.
     ...(process.platform === 'darwin'
-      ? { titleBarStyle: 'hidden', trafficLightPosition: { x: 14, y: 14 } }
+      ? { titleBarStyle: 'hidden', trafficLightPosition: { x: 14, y: 14 }, fullscreenable: false }   // gröna knappen = maximera (zoom), inte helskärm; helskärm bara via F11/sidan (setFull slår på det tillfälligt)
       : { frame: false }),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
@@ -1429,6 +1435,7 @@ function createWindow(incognito) {
   }
   win.on('leave-full-screen', () => {
     applyBounds(ctx);
+    if (process.platform === 'darwin' && !ctx.fullWanted) { try { win.setFullScreenable(false); } catch {} }   // tillbaka: gröna knappen maximerar
     // Begärde ingen det här (F11/meny/sidan sätter fullWanted=false först) och
     // fönstret är utan fokus, så är det skrivbordet som tog helskärmen. Ta
     // tillbaka den. Fördröjningen låter kompositorns konfiguration landa.

@@ -47,8 +47,8 @@ svg { display: block; }
      Mac: plats för trafikljusen till vänster. Windows/Linux: plats för fönsterknapparna
      till höger (exakt bredd via Window Controls Overlay-variablerna, annars 150 px). */
   #tabstrip { height: 44px; box-sizing: border-box; }
-  body.plat-darwin #tabstrip { padding-left: 84px; }
-  body.plat-win32 #tabstrip, body.plat-linux #tabstrip { padding-right: 0; }
+  body.plat-darwin #tabstrip { padding-left: 84px !important; }   /* !important: px-3 (utilities-lagret) vinner annars över components-lagret → trafikljusen hamnade över första fliken */
+  body.plat-win32 #tabstrip, body.plat-linux #tabstrip { padding-right: 0 !important; }
   /* Egna fönsterknappar längst till höger (Windows/Linux), Chromium-mått 46×44. */
   .winctl { display: none; align-self: stretch; margin-left: 6px; }
   body.plat-win32 .winctl, body.plat-linux .winctl { display: flex; }
