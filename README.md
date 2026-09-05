@@ -65,8 +65,8 @@ Vaka shares its code with three siblings, each built for a different kind of use
 | Browser | For whom |
 | --- | --- |
 | [Prowl](https://github.com/vaka-browser/prowl) | Security researchers and bug bounty hunters. Same engine, hacker tooling, dark by default. |
-| Skugga | Everything through Tor, fail-closed, WebRTC locked. |
-| Forget | Tor plus amnesia: the whole profile lives in RAM and is wiped on exit. |
+| [Skugga](https://github.com/vaka-browser/skugga) | Everything through Tor, fail-closed, WebRTC locked. |
+| [Forget](https://github.com/vaka-browser/forget) | Tor plus amnesia: the whole profile lives in RAM and is wiped on exit. |
 
 ## Build from source
 
