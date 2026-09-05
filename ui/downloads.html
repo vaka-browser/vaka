@@ -57,6 +57,11 @@
     <div class="list" id="list"><div class="empty">Inga nedladdningar än.</div></div>
   </div>
   <script>
+    // Översättning: samma ordlista som skalet (vaka-lang i localStorage delas, samma file://-origin).
+    window.locale = { load: (l) => { try { return require('electron').ipcRenderer.sendSync('i18n:load', l) || {}; } catch (e) { return {}; } } };
+  </script>
+  <script src="i18n.js"></script>
+  <script>
     const { ipcRenderer } = require('electron');
     const list = document.getElementById('list');
     let hovered = false, idleTimer = null, data = [];
@@ -71,6 +76,7 @@
 
     function fmt(n) { if (!n) return '0 B'; const u = ['B','KB','MB','GB']; let i = 0;
       while (n >= 1024 && i < 3) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0).replace('.', ',') + ' ' + u[i]; }
+    const t = (s) => (window.t ? window.t(s) : s);   // dynamiska/interpolerade strängar: svenska = nyckel
     function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
 
     function render() {
@@ -88,23 +94,23 @@
         let icoCls = 'ico', ico = ICO_DL, sub = '', subCls = 'sub', pct = 0;
         if (prog) {
           pct = d.total > 0 ? Math.round(d.received / d.total * 100) : 0;
-          sub = d.total > 0 ? (fmt(d.received) + ' / ' + fmt(d.total) + ' · ' + pct + '%') : (fmt(d.received) + ' hämtat…');
+          sub = d.total > 0 ? (fmt(d.received) + ' / ' + fmt(d.total) + ' · ' + pct + '%') : (fmt(d.received) + ' ' + t('hämtat…'));
           ico = paused ? ICO_PAUSE : '<div class="spin"></div>';
-          if (paused) sub = 'Pausad · ' + sub;
-        } else if (scan) { sub = 'Skannar efter virus…'; ico = '<div class="spin"></div>'; }
-        else if (infected) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = '⚠ Blockerad — ' + (d.threat || 'hot'); }
-        else if (removed) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = 'Borttagen (virus)'; }
+          if (paused) sub = t('Pausad') + ' · ' + sub;
+        } else if (scan) { sub = t('Skannar efter virus…'); ico = '<div class="spin"></div>'; }
+        else if (infected) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = '⚠ ' + t('Blockerad') + ' — ' + (d.threat || t('hot')); }
+        else if (removed) { icoCls = 'ico warn'; ico = ICO_WARN; subCls = 'sub warn'; sub = t('Borttagen (virus)'); }
         else if (done) { icoCls = 'ico done'; ico = ICO_DOC; subCls = 'sub done';
-          sub = (d.total > 0 ? fmt(d.total) + ' · ' : '') + (d.scan === 'overridden' ? 'Klar (behållen)' : (d.scan === 'clean' ? 'Säker ✓' : 'Klar')); }
-        else if (failed) { sub = d.state === 'cancelled' ? 'Avbruten' : 'Misslyckades'; }
+          sub = (d.total > 0 ? fmt(d.total) + ' · ' : '') + (d.scan === 'overridden' ? t('Klar (behållen)') : (d.scan === 'clean' ? t('Säker ✓') : t('Klar'))); }
+        else if (failed) { sub = d.state === 'cancelled' ? t('Avbruten') : t('Misslyckades'); }
 
         row.innerHTML =
           '<span class="' + icoCls + '">' + ico + '</span>' +
           '<div class="meta"><div class="name">' + esc(d.filename) + '</div>' +
           '<div class="' + subCls + '">' + esc(sub) + '</div>' +
           (prog ? '<div class="bar"><i style="width:' + pct + '%"></i></div>' : '') + '</div>' +
-          (done ? '<button class="fbtn" title="Visa i mapp" data-folder="' + d.id + '">' + ICO_FOLDER + '</button>' : '') +
-          (prog ? '<button class="fbtn" title="' + (paused ? 'Fortsätt' : 'Pausa') + '" data-toggle="' + d.id + '">' + (paused ? ICO_PLAY : ICO_PAUSE) + '</button><button class="fbtn" title="Avbryt" data-cancel="' + d.id + '">' + ICO_X + '</button>' : '');
+          (done ? '<button class="fbtn" title="' + esc(t('Visa i mapp')) + '" data-folder="' + d.id + '">' + ICO_FOLDER + '</button>' : '') +
+          (prog ? '<button class="fbtn" title="' + esc(paused ? t('Fortsätt') : t('Pausa')) + '" data-toggle="' + d.id + '">' + (paused ? ICO_PLAY : ICO_PAUSE) + '</button><button class="fbtn" title="' + esc(t('Avbryt')) + '" data-cancel="' + d.id + '">' + ICO_X + '</button>' : '');
 
         if (done) row.addEventListener('click', (ev) => {
           if (ev.target.closest('[data-folder]')) return;

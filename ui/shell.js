@@ -1769,7 +1769,7 @@ function renderDownloads() {
     const scanning = d.state === 'scanning', infected = d.state === 'infected', removed = d.state === 'deleted';
     let status, col = '#8ba3bf';
     const paused = d.state === 'paused', prog = d.state === 'progressing' || paused;
-    if (prog) status = (paused ? 'Pausad · ' : '') + `${fmtBytes(d.received)} / ${fmtBytes(d.total)}`;
+    if (prog) status = (paused ? (window.t ? window.t('Pausad') : 'Pausad') + ' · ' : '') + `${fmtBytes(d.received)} / ${fmtBytes(d.total)}`;
     else if (scanning) { status = 'Skannar efter virus…'; col = 'var(--color-terra)'; }
     else if (infected) { status = '⚠ Blockerad — ' + (d.threat || 'hot'); col = 'var(--color-danger)'; }
     else if (removed) { status = 'Borttagen (virus)'; col = 'var(--color-danger)'; }
