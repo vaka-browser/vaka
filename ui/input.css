@@ -48,7 +48,20 @@ svg { display: block; }
      till höger (exakt bredd via Window Controls Overlay-variablerna, annars 150 px). */
   #tabstrip { height: 44px; box-sizing: border-box; }
   body.plat-darwin #tabstrip { padding-left: 84px; }
-  body.plat-win32 #tabstrip, body.plat-linux #tabstrip { padding-right: max(150px, calc(100% - env(titlebar-area-width, 100%))); }
+  body.plat-win32 #tabstrip, body.plat-linux #tabstrip { padding-right: 0; }
+  /* Egna fönsterknappar längst till höger (Windows/Linux), Chromium-mått 46×44. */
+  .winctl { display: none; align-self: stretch; margin-left: 6px; }
+  body.plat-win32 .winctl, body.plat-linux .winctl { display: flex; }
+  body.html-full .winctl { display: none; }
+  .winctl button { width: 46px; height: 44px; display: grid; place-items: center; color: var(--color-navy-900); background: transparent; border: 0; cursor: default; transition: background .12s, color .12s; }
+  .winctl button svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .winctl button:hover { background: rgb(14 42 71 / .1); }
+  .winctl button.close:hover { background: #e81123; color: #fff; }
+  body.incog .winctl button { color: #cbbde6; }
+  body.incog .winctl button:hover { background: rgb(255 255 255 / .1); }
+  :root[data-theme="dark"] .winctl button { color: #d4d4d8; }
+  :root[data-theme="dark"] .winctl button:hover { background: rgb(255 255 255 / .1); }
+  :root[data-theme="dark"] .winctl button.close:hover, body.incog .winctl button.close:hover { background: #e81123; color: #fff; }
   body.html-full #tabstrip { padding-left: 12px; padding-right: 12px; }
   .chrome-bar { background: var(--color-chrome-2); border-bottom: 1px solid var(--color-line); }
 

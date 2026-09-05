@@ -20,6 +20,21 @@ const windowIncognito = new URLSearchParams(location.search).has('incognito');
 if (windowIncognito) document.body.classList.add('incog');
 document.body.classList.add('plat-' + ((window.view && window.view.platform) || 'linux'));
 /* Fönsterknapparna (Windows/Linux-overlay) följer flikradens färg: ljust, mörkt eller inkognito. */
+/* Egna fönsterknappar (Windows/Linux). Dubbelklick på tom flikrad maximerar, som i alla webbläsare. */
+(function () {
+  const v = window.view || {};
+  const b = (id) => document.getElementById(id);
+  if (b('wc-min')) b('wc-min').addEventListener('click', () => v.winMinimize && v.winMinimize());
+  if (b('wc-max')) b('wc-max').addEventListener('click', () => v.winToggleMax && v.winToggleMax());
+  if (b('wc-close')) b('wc-close').addEventListener('click', () => v.winClose && v.winClose());
+  const strip = b('tabstrip');
+  if (strip) strip.addEventListener('dblclick', (e) => { if (e.target === strip || e.target.classList.contains('flex-1')) v.winToggleMax && v.winToggleMax(); });
+  if (v.onWinMaximized) v.onWinMaximized((max) => {
+    const ic = b('wc-max-ic'); if (!ic) return;
+    ic.innerHTML = max ? '<rect x="5.5" y="2.5" width="8" height="8" rx="1"/><path d="M2.5 5.5v8h8"/>' : '<rect x="3.5" y="3.5" width="9" height="9" rx="1"/>';
+    if (b('wc-max')) b('wc-max').title = max ? 'Återställ' : 'Maximera';
+  });
+})();
 function updateTitlebar() {
   try {
     const incog = document.body.classList.contains('incog');

@@ -79,6 +79,12 @@
       <svg class="ic ic-sm"><use href="#i-plus" /></svg>
     </button>
     <div class="flex-1 self-stretch"></div>
+    <!-- Egna fönsterknappar (Windows/Linux) – som Brave/Chrome. Mac använder trafikljusen. -->
+    <div id="winctl" class="winctl" style="-webkit-app-region: no-drag;">
+      <button id="wc-min" title="Minimera" aria-label="Minimera"><svg viewBox="0 0 16 16"><path d="M3 8.5h10"/></svg></button>
+      <button id="wc-max" title="Maximera" aria-label="Maximera"><svg viewBox="0 0 16 16" id="wc-max-ic"><rect x="3.5" y="3.5" width="9" height="9" rx="1"/></svg></button>
+      <button id="wc-close" class="close" title="Stäng" aria-label="Stäng"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
   </div>
 
   <!-- Verktygsrad -->
