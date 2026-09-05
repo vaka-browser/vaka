@@ -1,6 +1,6 @@
 {
   "name": "vaka-browser",
-  "version": "0.3.87",
+  "version": "0.3.88",
   "description": "Vaka – the safe Swedish browser. Built-in protection, open family features and an AI security assistant.",
   "main": "main.js",
   "scripts": {

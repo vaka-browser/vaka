@@ -1757,6 +1757,8 @@ $('bookmarks-close').addEventListener('click', closeBookmarks);
 window.view.onOpenBookmarks(() => openBookmarks());
 
 /* ── Nedladdningar ── */
+/* Översättning med platshållare: svenska nyckeln innehåller {n} (namn/tal). */
+function tn(sv, n) { const s = (typeof window.t === 'function') ? window.t(sv) : sv; return s.split('{n}').join(String(n)); }
 const dlMap = new Map();
 function fmtBytes(n) { if (!n) return '0 B'; const u = ['B', 'KB', 'MB', 'GB']; let i = 0; while (n >= 1024 && i < 3) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0) + ' ' + u[i]; }
 function renderDownloads() {
@@ -2587,11 +2589,11 @@ function renderFam() {
     const el = host.querySelector('[data-child="' + c.id + '"]'); if (!el) return;
     el.querySelector('[data-a=active]').addEventListener('click', () => { fam.activeChild = (fam.activeChild === c.id ? null : c.id); famSave(); renderFam(); applyKidIndicator(); });
     el.querySelector('[data-a=del]').addEventListener('click', () => { fam.children = fam.children.filter((x) => x.id !== c.id); if (fam.activeChild === c.id) fam.activeChild = null; famSave(); renderFam(); applyKidIndicator(); });
-    const cp = el.querySelector('[data-a=copy]'); if (cp) cp.addEventListener('click', () => { try { navigator.clipboard.writeText(c.code); } catch {} showToast('Kod kopierad — ge den till ' + c.name); });
+    const cp = el.querySelector('[data-a=copy]'); if (cp) cp.addEventListener('click', () => { try { navigator.clipboard.writeText(c.code); } catch {} showToast(tn('Kod kopierad — ge den till {n}', c.name)); });
     const hb = el.querySelector('[data-a=hist]'); if (hb) hb.addEventListener('click', () => famShowHistory(c.id, c.name));
     const ro = el.querySelector('[data-a=rotate]');
     if (ro) ro.addEventListener('click', async () => {
-      const ok = await famConfirm('Byt kod f\u00f6r ' + c.name + '?', 'Den gamla koden slutar fungera direkt, och om ' + c.name + ' \u00e4r inloggad loggas h\u00e4n ut. Du f\u00e5r en ny kod att ge ' + c.name + '.', 'Byt kod');
+      const ok = await famConfirm(tn('Byt kod för {n}?', c.name), tn('Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.', c.name), 'Byt kod');
       if (!ok) return;
       const r = await window.family.rotateCode(account.token, c.id).catch(() => ({ ok: false }));
       if (r && r.ok && r.code) { c.code = r.code; c.sessions = 0; famSave(); renderFam(); showChildCode(c.name, r.code); return; }
@@ -2639,8 +2641,8 @@ async function famShowHistory(childId, childName) {
   const ov = document.createElement('div'); ov.id = 'fam-histmodal';
   ov.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(5,12,22,.5);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);';
   ov.innerHTML = '<div style="width:min(480px,95vw);max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:18px;padding:22px;box-shadow:0 30px 70px rgba(8,20,35,.4)">'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div style="font-size:17px;font-weight:800;color:var(--color-navy-900)">📜 ' + escapeHtml(childName) + 's historik</div><button id="fh-close" style="border:0;background:none;font-size:22px;cursor:pointer;color:var(--color-navy-600);line-height:1">×</button></div>'
-    + '<p style="font-size:12.5px;color:rgb(28 43 58 / .55);margin-bottom:14px">Öppen insyn — ' + escapeHtml(childName) + ' vet att du kan se det här.</p>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div style="font-size:17px;font-weight:800;color:var(--color-navy-900)">📜 ' + escapeHtml(tn('Historik för {n}', childName)) + '</div><button id="fh-close" style="border:0;background:none;font-size:22px;cursor:pointer;color:var(--color-navy-600);line-height:1">×</button></div>'
+    + '<p style="font-size:12.5px;color:rgb(28 43 58 / .55);margin-bottom:14px">' + escapeHtml(tn('Öppen insyn — {n} vet att du kan se det här.', childName)) + '</p>'
     + '<div id="fh-list" style="overflow-y:auto;flex:1;margin:0 -6px"><div class="fam-none" style="padding:8px 10px">Hämtar…</div></div></div>';
   document.body.appendChild(ov);
   const close = () => ov.remove();
@@ -2652,7 +2654,7 @@ async function famShowHistory(childId, childName) {
   let r; try { r = await window.family.history(account.token, cid); } catch { r = { ok: false }; }
   const list = ov.querySelector('#fh-list');
   if (!r || !r.ok) {
-    const msg = (r && r.error === 'not_your_child') ? ('Öppna det här från ditt <b>förälder-konto</b> för att se ' + escapeHtml(childName) + 's historik.') : 'Kunde inte hämta historiken just nu. Kontrollera din uppkoppling.';
+    const msg = (r && r.error === 'not_your_child') ? escapeHtml(tn('Öppna det här från ditt förälder-konto för att se historik för {n}.', childName)).replace('förälder-konto', '<b>förälder-konto</b>') : 'Kunde inte hämta historiken just nu. Kontrollera din uppkoppling.';
     list.innerHTML = '<div class="fam-none" style="padding:10px;line-height:1.5">' + msg + '</div>'; return;
   }
   const items = r.history || [];
@@ -2812,15 +2814,15 @@ function famChildCard(c) {
   const allowsHtml = aca.length ? '<div class="fam-sub">Tillfälligt tillåtet nu</div><div class="fam-bl">' + aca.map((a) => '<span class="fam-tag" style="background:rgba(23,138,90,.08);border-color:rgba(23,138,90,.25);padding-right:12px;">✓ ' + escapeHtml(a.host) + ' <span style="opacity:.6">till ' + fmtTime(a.until) + '</span></span>').join('') + '</div>' : '';
   return '<div class="fam-child" data-child="' + c.id + '">'
     + '<div class="fam-child-head"><span class="fam-avatar">' + escapeHtml((c.name[0] || '?').toUpperCase()) + '</span>'
-    + '<div class="grow"><div class="fam-name">' + escapeHtml(c.name) + '</div><div class="fam-age">' + c.age + ' år</div></div>'
+    + '<div class="grow"><div class="fam-name">' + escapeHtml(c.name) + '</div><div class="fam-age">' + escapeHtml(tn('{n} år', c.age)) + '</div></div>'
     + '<button class="fam-active' + (active ? ' on' : '') + '" data-a="active">' + (active ? '✓ Aktiv på denna enhet' : 'Aktivera här') + '</button></div>'
     + (c.code ? '<div class="fam-code"><span class="code">' + escapeHtml(c.code) + '</span><span style="font-size:11.5px;color:var(--color-navy-600)">inloggningskod</span><button data-a="copy">Kopiera</button></div>' : '')
-    + (c.code ? '<div class="fam-loginrow" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 6px;">' + (c.sessions ? '<span style="font-size:11.5px;font-weight:700;color:#178a5a;background:rgba(23,138,90,.1);border-radius:20px;padding:3px 10px;">\u25cf Inloggad nu</span>' : '<span style="font-size:11.5px;color:var(--color-navy-600);background:rgba(28,43,58,.06);border-radius:20px;padding:3px 10px;">Inte inloggad</span>') + '<button data-a="rotate" style="font-size:12px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.1);border:1px solid rgba(47,143,212,.25);border-radius:8px;padding:5px 11px;cursor:pointer;">Byt kod</button>' + (c.sessions ? '<button data-a="sessions" style="font-size:12px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.12);border:1px solid rgba(47,143,212,.3);border-radius:8px;padding:5px 11px;cursor:pointer;">🌍 Visa enheter</button>' : '') + '</div>' : '')
+    + (c.code ? '<div class="fam-loginrow" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 6px;">' + (c.sessions ? '<span style="font-size:11.5px;font-weight:700;color:#178a5a;background:rgba(23,138,90,.1);border-radius:20px;padding:3px 10px;">\u25cf ' + escapeHtml(tn('Inloggad nu', '')) + '</span>' : '<span style="font-size:11.5px;color:var(--color-navy-600);background:rgba(28,43,58,.06);border-radius:20px;padding:3px 10px;">Inte inloggad</span>') + '<button data-a="rotate" style="font-size:12px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.1);border:1px solid rgba(47,143,212,.25);border-radius:8px;padding:5px 11px;cursor:pointer;">Byt kod</button>' + (c.sessions ? '<button data-a="sessions" style="font-size:12px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.12);border:1px solid rgba(47,143,212,.3);border-radius:8px;padding:5px 11px;cursor:pointer;">🌍 ' + escapeHtml(tn('Visa enheter', '')) + '</button>' : '') + '</div>' : '')
     + '<div class="fam-sub">Blockerade sidor</div>' + tags + allowsHtml
     + '<div class="fam-addsite"><input class="fam-in" placeholder="t.ex. exempel.se" spellcheck="false" /><button class="btn btn-safe flex-none" style="height:40px;padding:0 14px;">Blockera</button></div>'
-    + '<div class="fam-krypto">💬 Säg till <b>Krypto</b>: "blockera de här sidorna för ' + escapeHtml(c.name) + '" — eller "tillåt X för ' + escapeHtml(c.name) + ' i en timme".</div>'
-    + '<button class="fam-histbtn" data-a="hist" style="display:block;font-size:12.5px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.08);border:1px solid rgba(47,143,212,.25);border-radius:9px;padding:8px 12px;cursor:pointer;margin-top:10px;">📜 Se ' + escapeHtml(c.name) + 's historik</button>'
-    + '<button class="fam-del" data-a="del">Ta bort ' + escapeHtml(c.name) + ' ur familjen</button></div>';
+    + '<div class="fam-krypto">💬 ' + escapeHtml(tn('Säg till Krypto: "blockera de här sidorna för {n}" — eller "tillåt X för {n} i en timme".', c.name)).replace('Krypto', '<b>Krypto</b>') + '</div>'
+    + '<button class="fam-histbtn" data-a="hist" style="display:block;font-size:12.5px;font-weight:700;color:#2f8fd4;background:rgba(47,143,212,.08);border:1px solid rgba(47,143,212,.25);border-radius:9px;padding:8px 12px;cursor:pointer;margin-top:10px;">📜 ' + escapeHtml(tn('Se historik för {n}', c.name)) + '</button>'
+    + '<button class="fam-del" data-a="del">' + escapeHtml(tn('Ta bort {n} ur familjen', c.name)) + '</button></div>';
 }
 function famAddChild() {
   if (document.getElementById('fam-modal')) return;
