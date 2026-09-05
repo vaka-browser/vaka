@@ -1,0 +1,27 @@
+! Vakas egna regler (uBlock Origin-syntax, det Braves motor förstår).
+! Piratsajter där annonsnäten byter domän hela tiden: blockera ALLA tredjepartsskript och
+! tillåt bara kända CDN:er – samma idé som uBlocks denyallow-regel för hydrahd.ru, men
+! skriven som undantag eftersom adblock-rust saknar denyallow och jokerdomäner.
+$script,third-party,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||cdn.jsdelivr.net^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||cdnjs.cloudflare.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||ajax.googleapis.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||fonts.googleapis.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||www.gstatic.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||www.google.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||static.cloudflareinsights.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||challenges.cloudflare.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||image.tmdb.org^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||code.jquery.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||stackpath.bootstrapcdn.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||cdn.bootcdn.net^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||kit.fontawesome.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||use.fontawesome.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||www.recaptcha.net^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||js.hcaptcha.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||disqus.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||c.disquscdn.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||unpkg.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||player.vimeo.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||www.youtube.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io
+@@||www.youtube-nocookie.com^$script,domain=hydrahd.ws|hydrahd.ru|hydrahd.cc|hydrahd.me|hydrahd.sx|hydrahd.io

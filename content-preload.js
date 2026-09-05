@@ -3,6 +3,16 @@
  * inloggningar och fångar nya när du loggar in. Allt defensivt – får aldrig
  * krascha sidan. */
 const { ipcRenderer } = require('electron');
+/* Popunder-vakt: huvudprocessen får veta vad senaste klicket satt på (länk eller inte) INNAN
+ * sidans egna hanterare hinner öppna något. En ny flik till en annan sajt tillåts sedan bara
+ * om klicket satt på en riktig länk dit. Synkront så ordningen är garanterad. */
+(function () {
+  const report = (href) => { try { ipcRenderer.sendSync('page:click', { href: href || null }); } catch {} };
+  const linkOf = (t) => { try { const a = t && t.closest ? t.closest('a[href]') : null; return a ? a.href : null; } catch { return null; } };
+  window.addEventListener('pointerdown', (e) => report(linkOf(e.target)), true);
+  window.addEventListener('mousedown', (e) => report(linkOf(e.target)), true);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') report(linkOf(document.activeElement)); }, true);
+})();
 
 /* Få Vaka att se ut EXAKT som riktiga Google Chrome för sajternas JavaScript
  * (t.ex. Googles inloggnings-BotGuard). Electron läcker skillnader mot Chrome:

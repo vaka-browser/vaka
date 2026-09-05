@@ -434,6 +434,13 @@ function ensureView(ctx, tabId) {
       // (Vanliga länkar med target=_blank har inga fönster-features och blir flik som vanligt.)
       return { action: 'deny' };
     }
+    // Popunder-vakt: en ny flik till en ANNAN sajt får bara öppnas om användarens senaste klick
+    // satt på en riktig länk dit (target=_blank, mitten-/Ctrl-klick). Piratsajternas trick –
+    // klick var som helst → a.click()/window.open mot en annonsdomän – stoppas här.
+    if (url && !sameSite(url, from) && !popupTrustedHost(url)) {
+      const lc = wc.__lastClick; const viaLink = !!(lc && Date.now() - lc.t < 3000 && lc.href && sameSite(lc.href, url));
+      if (!viaLink) return { action: 'deny' };
+    }
     if (url) sendTo(ctx, 'open-new-tab', url);                     // vanlig ny flik (Ctrl/mitten-klick, target=_blank)
     return { action: 'deny' };
   });
@@ -1034,6 +1041,7 @@ ipcMain.on('i18n:load', (e, lang) => {
   } catch { e.returnValue = {}; }
 });
 // Skalet färgar om fönsterknapparna (Windows/Linux-overlay) när tema/inkognito byts.
+ipcMain.on('page:click', (e, info) => { e.returnValue = 1; try { e.sender.__lastClick = { t: Date.now(), href: info && info.href ? String(info.href) : null }; } catch {} });
 ipcMain.on('win:minimize', (e) => { try { BrowserWindow.fromWebContents(e.sender).minimize(); } catch {} });
 ipcMain.on('win:toggle-max', (e) => { try { const w = BrowserWindow.fromWebContents(e.sender); if (w.isMaximized()) w.unmaximize(); else w.maximize(); } catch {} });
 ipcMain.on('win:close', (e) => { try { BrowserWindow.fromWebContents(e.sender).close(); } catch {} });   // samma väg som systemets kryss (stäng-bekräftelsen sköts som förut)
