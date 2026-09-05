@@ -37,7 +37,10 @@ Useful flags while developing:
 | `scanner.js` | Dangerous-site checks and content analysis. |
 | `auth.js` | Account session handling. |
 | `ui/` | The browser shell (`shell.html`, `shell.js`, `input.css` → `tailwind.css`), Krypto panel, checkout, settings. |
-| `filters/` | Filter lists used by the built-in protection engine. |
+| `adblock-brave.js` | Brave's adblock-rust engine (via adblock-rs): list loading, cache, network blocking, popup rules. |
+| `adblock-preload.js` | Cosmetic filtering inside pages: hide selectors, generic class/id hiding, scriptlets. |
+| `native/adblock/` | Prebuilt adblock-rs binaries per platform (built by the `adblock-native` workflow). |
+| `filters/` | Brave's default filter lists plus `vaka-unbreak.txt`; `tools/update_filters.sh` refreshes them. |
 | `tools/` | Maintenance scripts (filter updates, translation generation). |
 | `build/` | Icons and packaging hooks. |
 

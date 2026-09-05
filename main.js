@@ -24,10 +24,8 @@ let autoUpdater = null;
 try { ({ autoUpdater } = require('electron-updater')); } catch {}
 
 // Riktig filtermotor (EasyList + EasyPrivacy) för nätverks-/kosmetisk blockering.
-let ElectronBlocker = null, AdRequest = null;
-try { ({ ElectronBlocker } = require('@ghostery/adblocker-electron')); } catch {}
-try { ({ Request: AdRequest } = require('@ghostery/adblocker')); }
-catch { try { ({ Request: AdRequest } = require('@ghostery/adblocker-electron')); } catch {} }
+const { BraveAdblock, registerScheme: registerAdblockScheme } = require('./adblock-brave');   // Braves adblock-rust via adblock-rs (native)
+registerAdblockScheme();   // före app.ready
 
 const KRYPTO_W = 400;
 const NET_H = 340;          // nätverksinspektörens dockade höjd
@@ -128,32 +126,6 @@ const TRACKER_HOSTS = new Set([
 ]);
 let adblockOn = true;
 let adblockCount = 0;
-/* Popup-regler ($popup, ~6 000 st i EasyList/AdGuard/uBlock) stöds inte av Ghostery-motorn
- * och kastas vid parsning. Vi plockar ut dem själva till en egen liten motor som bara
- * används för window.open/navigeringsmål – samma sak som Brave/uBlock gör med dem. */
-let popupEngine = null;
-function buildPopupEngine(dir, files) {
-  try {
-    const rules = [];
-    for (const f of files) {
-      let txt = ''; try { txt = fs.readFileSync(path.join(dir, f), 'utf8'); } catch { continue; }
-      for (const line of txt.split('\n')) {
-        if (!/\$[^\s]*\bpopup\b/.test(line) || line.startsWith('!') || line.includes('~popup')) continue;
-        const r = line.replace(/\$([^\s]*)$/, (m, opts) => { const o = opts.split(',').filter((x) => x !== 'popup'); return o.length ? '$' + o.join(',') : ''; });
-        if (r && !r.includes('##')) rules.push(r);
-      }
-    }
-    popupEngine = rules.length ? ElectronBlocker.parse(rules.join('\n'), { loadCosmeticFilters: false, loadNetworkFilters: true }) : null;
-    console.log('[adblock] popup-regler:', rules.length);
-  } catch (e) { popupEngine = null; console.warn('[adblock] popup-motor misslyckades', String(e)); }
-}
-function popupRuleMatch(url, sourceUrl) {
-  if (!popupEngine || !AdRequest) return false;
-  for (const type of ['document', 'other']) {
-    try { if (popupEngine.match(AdRequest.fromRawDetails({ type, url, sourceUrl: sourceUrl || url })).match) return true; } catch {}
-  }
-  return false;
-}
 function hostCategory(url) {
   try {
     const h = new URL(url).hostname;
@@ -162,129 +134,31 @@ function hostCategory(url) {
     return TRACKER_HOSTS.has(hit) ? 'tracker' : 'ad';
   } catch { return null; }
 }
-// ── Filtermotor: laddas en gång, aktiveras per session ──
-let engine = null;
-let engineReady = null;
+// ── Filtermotor: Braves adblock-rust (adblock-brave.js) – laddas en gång, aktiveras per session ──
+let engine = null;                       // sätts till motorn när den är laddad (används som "är igång"-flagga)
 const blockedSessions = new Set();
-
-// Cache för färdigbyggd filtermotor. Att parsa de ~13 MB listorna tar ~1 s (mer på
-// svaga datorer) OCH är synkront → fryser huvudtråden. Vi serialiserar motorn till disk
-// och deserialiserar den vid nästa start (~17 ms), och invaliderar via ett fingeravtryck
-// (adblocker-version + varje fils storlek/mtime) så cachen byggs om när listorna ändras.
-function engineCachePaths() {
-  const base = app.getPath('userData');
-  return { bin: path.join(base, 'filters-engine.bin'), meta: path.join(base, 'filters-engine.meta') };
-}
-function filtersFingerprint(dir, files) {
-  const parts = ['v2'];
-  try { parts.push(require('@ghostery/adblocker-electron/package.json').version); } catch {}
-  for (const f of files) { try { const st = fs.statSync(path.join(dir, f)); parts.push(f + ':' + st.size + ':' + Math.round(st.mtimeMs)); } catch {} }
-  return parts.join('|');
-}
-function attachResources(dir) {   // scriptlet-resurser (~2 ms): window.open-defuser m.fl. Sätts alltid, även från cache.
-  try {
-    const { Resources } = require('@ghostery/adblocker-electron');
-    const resTxt = fs.readFileSync(path.join(dir, 'resources.txt'), 'utf8');
-    engine.resources = Resources.parse(resTxt, { checksum: 'vaka' });
-  } catch {}
-}
-
-function loadEngine() {
-  if (engineReady) return engineReady;
-  engineReady = (async () => {
-    if (!ElectronBlocker) return;
-    // Släpp fram fönstrets FÖRSTA målning innan den tunga parsningen — annars fryser
-    // huvudtråden i ~1 s (flera sekunder på svaga datorer) och skalet står vitt "jättelänge".
-    await new Promise((r) => setImmediate(r));
-    try {
-      // Medföljande filterlistor (uBlock + AdGuard-settet) — parsas lokalt, ingen nätverkshämtning.
-      const dir = path.join(__dirname, 'filters');
-      let files = [];
-      try { files = fs.readdirSync(dir).filter((f) => f.endsWith('.txt') && f !== 'resources.txt'); } catch {}
-      const { bin, meta } = engineCachePaths();
-      const fp = filtersFingerprint(dir, files);
-      // 1) Snabb väg: läs färdigbyggd motor från cache (~17 ms mot ~1000+ ms parse).
-      let loaded = false;
-      try {
-        if (fs.existsSync(bin) && fs.existsSync(meta) && fs.readFileSync(meta, 'utf8') === fp) {
-          engine = ElectronBlocker.deserialize(fs.readFileSync(bin));
-          loaded = true;
-        }
-      } catch { engine = null; loaded = false; }
-      // 2) Långsam väg: parsa listorna och spara cachen till nästa start.
-      if (!loaded) {
-        const text = files
-          .map((f) => { try { return fs.readFileSync(path.join(dir, f), 'utf8'); } catch { return ''; } })
-          .join('\n');
-        if (!text.trim()) {
-          engine = await ElectronBlocker.fromPrebuiltAdsAndTracking(globalThis.fetch || require('cross-fetch'));
-        } else {
-          // loadCosmeticFilters => element-göm + scriptlet-injektion (pop-under-/redirect-motgifter à la uBlock/Brave)
-          engine = ElectronBlocker.parse(text, { loadCosmeticFilters: true, loadNetworkFilters: true });
-          try { fs.writeFileSync(bin, Buffer.from(engine.serialize())); fs.writeFileSync(meta, fp); } catch {}
-        }
-      }
-      setImmediate(() => buildPopupEngine(dir, files));   // $popup-regler, efter huvudmotorn
-      attachResources(dir);   // 149 scriptlets — garanterat satta oavsett cache/parse
-      engine.on('request-blocked', (request) => {
-        adblockCount++;
-        broadcast('adblock:count', adblockCount);
-        broadcast('adblock:hit', hostCategory(request.url) === 'tracker' ? 'tracker' : 'ad');
-      });
-      // Kosmetik/scriptlet-injektion i Electron 33 (registerPreloadScript saknas → vi kör setPreloads i enableEngineOn)
-      try {
-        ipcMain.removeHandler('@ghostery/adblocker/inject-cosmetic-filters');
-        ipcMain.removeHandler('@ghostery/adblocker/is-mutation-observer-enabled');
-        ipcMain.handle('@ghostery/adblocker/inject-cosmetic-filters', (e, url, msg) => engine.onInjectCosmeticFilters(e, url, msg));
-        ipcMain.handle('@ghostery/adblocker/is-mutation-observer-enabled', (e) => engine.onIsMutationObserverEnabled(e));
-      } catch {}
-      if (adblockOn) for (const s of blockedSessions) { try { enableEngineOn(s); } catch {} }
-    } catch { /* faller tillbaka på hostCategory-vakten om parsning misslyckas */ }
-  })();
-  return engineReady;
-}
-
-function ghosteryPreloadPath() {
-  try { return require.resolve('@ghostery/adblocker-electron-preload'); } catch { return null; }
-}
 // Allowlist: blockera ALDRIG anrop till inloggnings-/konto-domäner (annars kan 2FA-verifiering m.m. hänga)
 const ADBLOCK_ALLOW = /(^|\.)(github\.com|githubusercontent\.com|githubassets\.com|github\.io|accounts\.google\.com|login\.microsoftonline\.com|login\.live\.com|appleid\.apple\.com|okta\.com|auth0\.com|duosecurity\.com)$/i;
 function adblockAllowHost(url) { try { return ADBLOCK_ALLOW.test(new URL(url).hostname); } catch { return false; } }
-// Aktivera motorn på en session: nätverksblockering + kosmetik/scriptlet-preload (Electron 33-kompatibelt).
-function enableEngineOn(sess) {
-  if (!engine) return;
-  try {
-    sess.webRequest.onHeadersReceived({ urls: ['<all_urls>'] }, (d, cb) => engine.onHeadersReceived(d, cb));
-    sess.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (d, cb) => {
-      if (adblockAllowHost(d.url)) { cb({}); return; }   // släpp igenom GitHub/inloggnings-anrop orört
-      engine.onBeforeRequest(d, cb);
-    });
-  } catch {}
-  try {
-    const p = ghosteryPreloadPath();
-    if (!p) return;
-    if (sess.registerPreloadScript) {          // Electron ≥35 (setPreloads borttaget i nyare)
-      if (!sess.__ghosteryPreloadId) sess.__ghosteryPreloadId = sess.registerPreloadScript({ type: 'frame', filePath: p });
-    } else {
-      const cur = sess.getPreloads() || []; if (!cur.includes(p)) sess.setPreloads([...cur, p]);
-    }
-  } catch {}
-}
-function disableEngineOn(sess) {
-  try { sess.webRequest.onHeadersReceived(null); sess.webRequest.onBeforeRequest(null); } catch {}
-  try {
-    if (sess.unregisterPreloadScript) {
-      if (sess.__ghosteryPreloadId) { sess.unregisterPreloadScript(sess.__ghosteryPreloadId); sess.__ghosteryPreloadId = null; }
-    } else {
-      const p = ghosteryPreloadPath(); if (p) sess.setPreloads((sess.getPreloads() || []).filter((x) => x !== p));
-    }
-  } catch {}
-}
+const adblock = new BraveAdblock({
+  filtersDir: path.join(__dirname, 'filters'),
+  cacheDir: () => app.getPath('userData'),
+  preloadPath: path.join(__dirname, 'adblock-preload.js'),
+  allowHost: (u) => adblockAllowHost(u),
+  isOn: () => adblockOn,
+  onBlocked: (url) => { adblockCount++; broadcast('adblock:count', adblockCount); broadcast('adblock:hit', hostCategory(url) === 'tracker' ? 'tracker' : 'ad'); },
+});
+function loadEngine() { return adblock.load().then((ok) => { if (ok) engine = adblock; return ok; }); }
+function enableEngineOn(sess) { adblock.enableOn(sess); }
+function disableEngineOn(sess) { adblock.disableOn(sess); }
+// Kosmetik för adblock-preload.js (synkront – måste vara klart innan sidans skript kör)
+ipcMain.on('adblock:cosmetics', (e, url) => { e.returnValue = adblock.cosmeticsFor(String(url || '')); });
+ipcMain.on('adblock:classid', (e, classes, ids, exceptions) => { e.returnValue = adblock.classIdSelectors(classes, ids, exceptions); });
 
 function installAdblockOn(sess) {
   blockedSessions.add(sess);
-  if (engine && adblockOn) enableEngineOn(sess);
-  else loadEngine();
+  adblock.install(sess);
+  if (!engine) loadEngine();
 }
 
 // Popup-fönster som får öppnas på riktigt trots att de är korsdomän: inloggning/betalning.
@@ -298,11 +172,7 @@ function sameSite(a, b) { const x = siteOf(a); return !!x && x === siteOf(b); }
 function isBlockedTarget(url, sourceUrl) {
   if (!/^https?:/i.test(url)) return true;            // javascript:, data:, blob:, about:blank-kedjor
   try {
-    if (engine && AdRequest) {
-      const r = AdRequest.fromRawDetails({ type: 'document', url, sourceUrl: sourceUrl || url });
-      if (engine.match(r).match) return true;
-    }
-    if (popupRuleMatch(url, sourceUrl)) return true;       // $popup-regler (popunder-/annonsfönster)
+    if (adblock.checkTarget(url, sourceUrl)) return true;   // main_frame- och $popup-regler (Braves motor)
   } catch {}
   return !!hostCategory(url);
 }
@@ -1163,6 +1033,10 @@ ipcMain.on('i18n:load', (e, lang) => {
     uiLang = code;                        // skalets språkval – används av trUi() för sid-UI (kortväljaren)
   } catch { e.returnValue = {}; }
 });
+// Skalet färgar om fönsterknapparna (Windows/Linux-overlay) när tema/inkognito byts.
+ipcMain.on('win:titlebar', (e, c) => {
+  try { const w = BrowserWindow.fromWebContents(e.sender); if (w && w.setTitleBarOverlay && c) w.setTitleBarOverlay({ color: String(c.color || '#e7edf4'), symbolColor: String(c.symbolColor || '#0e2a47'), height: 44 }); } catch {}
+});
 ipcMain.on('win:do-close', (e) => {
   const ctx = wins.get(e.sender.id); if (ctx) ctx.forceClose = true;
   const w = BrowserWindow.fromWebContents(e.sender); if (w) w.close();
@@ -1478,6 +1352,13 @@ function createWindow(incognito) {
     width: 1280, height: 820, minWidth: 900, minHeight: 600,
     backgroundColor: incognito ? '#0a0512' : '#0e2a47',
     title: incognito ? 'Vaka – Inkognito' : 'Vaka',
+    // Som Brave/Chrome: ingen egen titelrad – flikarna ligger i samma rad som fönsterknapparna.
+    // macOS: trafikljusen ritas av systemet uppe till vänster (skalet lämnar plats). Windows/Linux:
+    // Electrons Window Controls Overlay ritar minimera/maximera/stäng uppe till höger i flikraden.
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'darwin'
+      ? { trafficLightPosition: { x: 14, y: 14 } }
+      : { titleBarOverlay: { color: incognito ? '#0b0618' : '#e7edf4', symbolColor: incognito ? '#cbbde6' : '#0e2a47', height: 44 } }),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
   const id = win.webContents.id;

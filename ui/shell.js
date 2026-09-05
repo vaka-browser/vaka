@@ -18,6 +18,16 @@ const byId = (id) => tabs.find((t) => t.id === id);
 // Inkognitofönster: alla dess flikar körs som inkognito och skalet får det mörka temat.
 const windowIncognito = new URLSearchParams(location.search).has('incognito');
 if (windowIncognito) document.body.classList.add('incog');
+document.body.classList.add('plat-' + ((window.view && window.view.platform) || 'linux'));
+/* Fönsterknapparna (Windows/Linux-overlay) följer flikradens färg: ljust, mörkt eller inkognito. */
+function updateTitlebar() {
+  try {
+    const incog = document.body.classList.contains('incog');
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const c = incog ? { color: '#0b0618', symbolColor: '#cbbde6' } : dark ? { color: '#0c0c0d', symbolColor: '#d4d4d8' } : { color: '#e7edf4', symbolColor: '#0e2a47' };
+    if (window.view && window.view.setTitlebar) window.view.setTitlebar(c);
+  } catch {}
+}
 
 /* ── URL-hjälp ── */
 const ENGINES = {
@@ -120,6 +130,7 @@ function showActiveTab() {
 function switchTab(tab) {
   active = tab;
   document.body.classList.toggle('incog', !!tab.incognito);
+  updateTitlebar();
   $('search-engine').textContent = tab.incognito ? INCOG_ENGINE.label : (ENGINES[searchEngine] || ENGINES.google).label;
   addressInput.value = tab.url ? pretty(tab.url) : '';
   setShield(tab.url ? (protectionOn ? (tab.verdict ? tab.verdict.status : 'ok') : 'off') : 'home');
@@ -612,6 +623,7 @@ function setTheme(t) {
   theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = theme;
   try { localStorage.setItem('skoll-theme', theme); } catch {}
+  updateTitlebar();
   const l = $('seg-light'), d = $('seg-dark');
   if (l) l.classList.toggle('on', theme === 'light');
   if (d) d.classList.toggle('on', theme === 'dark');

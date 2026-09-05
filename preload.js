@@ -146,6 +146,8 @@ contextBridge.exposeInMainWorld('view', {
   kryptoPrefill: (text) => ipcRenderer.send('krypto:prefill', text),
   onOpenLogin: (cb) => ipcRenderer.on('open-login', () => cb()),
   onKryptoRecheck: (cb) => ipcRenderer.on('krypto-recheck', () => cb()),
+  platform: process.platform,
+  setTitlebar: (c) => ipcRenderer.send('win:titlebar', c),
   onLinkNavigate: (cb) => ipcRenderer.on('link-navigate', (_e, id, url) => cb(id, url)),
   onDidNavigate: (cb) => ipcRenderer.on('did-navigate', (_e, id, url, b, f) => cb(id, url, b, f)),
   onTitle: (cb) => ipcRenderer.on('title', (_e, id, t) => cb(id, t)),

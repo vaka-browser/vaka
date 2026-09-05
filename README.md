@@ -37,8 +37,8 @@ Vaka is built in Sweden, in Swedish first, and speaks 54 languages.
 
 ## What you get
 
-**Protection that is part of the browser, not a plug-in.**
-The filter engine (EasyList, AdGuard, Fanboy and our own lists) runs inside Vaka's main process. It is not a Chrome extension, so Manifest V3 does not apply to it, and it keeps working no matter what upstream Chromium decides about extensions. Cosmetic filtering and scriptlets included.
+**Brave's ad blocker, built into the browser.**
+Vaka runs [adblock-rust](https://github.com/brave/adblock-rust), the same Rust engine that powers Brave Shields, through Brave's official Node binding. It loads Brave's default filter set (EasyList, EasyPrivacy, the uBlock Origin lists, Brave's own lists, URLhaus malware domains) plus a small Vaka list, applies cosmetic filters and uBlock Origin scriptlets, serves stub resources so pages don't break, and enforces the lists' popup rules against pop-unders. It is not a Chrome extension, so Manifest V3 does not apply to it.
 
 **A warning before the page loads, not after.**
 Dangerous addresses are checked against Säkerkoll's threat data and known-bad patterns. If a page looks like a scam, Vaka shows a full-screen warning with the reasons before anything renders. Download scanning catches the rest.
@@ -81,6 +81,8 @@ npm start
 
 `npm install` downloads the castLabs build of Electron (Chromium with Widevine). Everything else is plain JavaScript with no compile step.
 
+The ad-blocking engine is a native module (Brave's `adblock-rs`). Prebuilt binaries for Linux x64, Windows x64, macOS Apple Silicon and macOS Intel live in `native/adblock/` and are built by the `adblock-native` GitHub Actions workflow, so you do not need a Rust toolchain to run or package Vaka. To rebuild them, run the workflow (or `npm install adblock-rs` with Rust installed) and copy `index.node` into the matching folder.
+
 ### Packaging
 
 | Target | Command |
@@ -100,7 +102,10 @@ node_modules/.bin/tailwindcss -i ui/input.css -o ui/tailwind.css --minify
 ## How the code is organised
 
 ```
-main.js              Electron main process: windows, tabs, protection engine, IPC
+main.js              Electron main process: windows, tabs, IPC
+adblock-brave.js     Brave's adblock-rust engine: lists, cache, network blocking, popup rules
+adblock-preload.js   Cosmetic filtering inside pages (hide rules, generic class/id hiding, scriptlets)
+native/adblock/      Prebuilt adblock-rs binaries per platform
 preload.js           Bridge between the shell UI and the main process
 content-preload.js   Runs inside pages: password/card detection, autofill, cosmetics
 scanner.js           Dangerous-site checks and content analysis
@@ -139,7 +144,7 @@ Found a security problem? Please report it privately — see [SECURITY.md](SECUR
 
 Vaka is released under the [Mozilla Public License 2.0](LICENSE). You can use, modify and redistribute it, including in commercial products, as long as changes to MPL-covered files stay under the MPL.
 
-Filter lists in `filters/` keep their own licenses (EasyList and Fanboy lists: GPLv3 / CC BY-SA 3.0; AdGuard lists: GPLv3). Electron and Chromium are covered by their respective licenses.
+Filter lists in `filters/` keep their own licenses (EasyList and Fanboy lists: GPLv3 / CC BY-SA 3.0; uBlock Origin lists: GPLv3; Brave lists: MPL-2.0; URLhaus: CC0). The ad-blocking engine adblock-rust is MPL-2.0 (Brave Software). Electron and Chromium are covered by their respective licenses.
 
 ---
 
