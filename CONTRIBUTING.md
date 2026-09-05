@@ -13,7 +13,7 @@ Thanks for wanting to help. Vaka is a small project with a big goal: a browser t
 ## Development setup
 
 ```bash
-git clone https://github.com/northcrafto/vaka.git
+git clone https://github.com/vaka-browser/vaka.git
 cd vaka
 npm install          # downloads the castLabs Electron build (Widevine-enabled)
 npm start            # runs the browser from source

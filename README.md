@@ -64,7 +64,7 @@ Vaka shares its code with three siblings, each built for a different kind of use
 
 | Browser | For whom |
 | --- | --- |
-| [Prowl](https://github.com/northcrafto/prowl) | Security researchers and bug bounty hunters. Same engine, hacker tooling, dark by default. |
+| [Prowl](https://github.com/vaka-browser/prowl) | Security researchers and bug bounty hunters. Same engine, hacker tooling, dark by default. |
 | Skugga | Everything through Tor, fail-closed, WebRTC locked. |
 | Forget | Tor plus amnesia: the whole profile lives in RAM and is wiped on exit. |
 
@@ -73,7 +73,7 @@ Vaka shares its code with three siblings, each built for a different kind of use
 You need Node.js 22 or newer.
 
 ```bash
-git clone https://github.com/northcrafto/vaka.git
+git clone https://github.com/vaka-browser/vaka.git
 cd vaka
 npm install
 npm start
@@ -126,7 +126,7 @@ The account, family and Krypto features talk to a hosted backend. Browsing, prot
 - Sync of bookmarks and settings between devices, end-to-end encrypted.
 - More languages for Krypto.
 
-Have an idea? [Open an issue](https://github.com/northcrafto/vaka/issues/new/choose).
+Have an idea? [Open an issue](https://github.com/vaka-browser/vaka/issues/new/choose).
 
 ## Contributing
 
@@ -136,8 +136,8 @@ Found a security problem? Please report it privately — see [SECURITY.md](SECUR
 
 ## Contributors
 
-<a href="https://github.com/northcrafto/vaka/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=northcrafto/vaka" alt="Contributors">
+<a href="https://github.com/vaka-browser/vaka/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=vaka-browser/vaka" alt="Contributors">
 </a>
 
 ## License
