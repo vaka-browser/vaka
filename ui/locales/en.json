@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Access this from your parent account to see history for {n}.",
  "Byt kod för {n}?": "Change code for {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "The old code stops working immediately, and if {n} is logged in, he is logged out. You get a new code to give {n}.",
- "Kod kopierad — ge den till {n}": "Code copied — give it to {n}"
+ "Kod kopierad — ge den till {n}": "Code copied — give it to {n}",
+ "Hämtar nyaste versionen": "Downloading the latest version"
 }

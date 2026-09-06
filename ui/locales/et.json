@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Juurdepääs sellele oma vanemakontolt, et näha {n} ajalugu.",
  "Byt kod för {n}?": "Kas muuta {n} koodi?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Vana kood lakkab koheselt töötamast ja kui {n} on sisse logitud, logitakse ta välja. Saate uue koodi, et anda {n}.",
- "Kod kopierad — ge den till {n}": "Kood on kopeeritud – andke see kasutajale {n}"
+ "Kod kopierad — ge den till {n}": "Kood on kopeeritud – andke see kasutajale {n}",
+ "Hämtar nyaste versionen": "Uusima versiooni allalaadimine"
 }

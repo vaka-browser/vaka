@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Получите доступ к этому из своей родительской учетной записи, чтобы просмотреть историю для {n}.",
  "Byt kod för {n}?": "Изменить код для {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Старый код сразу перестает работать, и если {n} вошел в систему, он выходит из системы. Вы получаете новый код, чтобы дать {n}.",
- "Kod kopierad — ge den till {n}": "Код скопирован — передайте его {n}"
+ "Kod kopierad — ge den till {n}": "Код скопирован — передайте его {n}",
+ "Hämtar nyaste versionen": "Скачиваем последнюю версию"
 }

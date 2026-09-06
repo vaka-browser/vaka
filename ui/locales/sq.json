@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Hyni në këtë nga llogaria juaj prind për të parë historikun për {n}.",
  "Byt kod för {n}?": "Të ndryshohet kodi për {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Kodi i vjetër ndalon së punuari menjëherë, dhe nëse {n} është i identifikuar, ai del jashtë. Ju merrni një kod të ri për të dhënë {n}.",
- "Kod kopierad — ge den till {n}": "Kodi u kopjua — jepjani {n}"
+ "Kod kopierad — ge den till {n}": "Kodi u kopjua — jepjani {n}",
+ "Hämtar nyaste versionen": "Duke shkarkuar versionin më të fundit"
 }

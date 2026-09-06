@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Fikia hii kutoka kwa akaunti yako ya mzazi ili kuona historia ya {n}.",
  "Byt kod för {n}?": "Ungependa kubadilisha msimbo wa {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Nambari ya zamani itaacha kufanya kazi mara moja, na ikiwa {n} ameingia, ametoka. Unapata msimbo mpya wa kutoa {n}.",
- "Kod kopierad — ge den till {n}": "Msimbo umenakiliwa — mpe {n}"
+ "Kod kopierad — ge den till {n}": "Msimbo umenakiliwa — mpe {n}",
+ "Hämtar nyaste versionen": "Inapakua toleo jipya zaidi"
 }

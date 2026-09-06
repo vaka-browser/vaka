@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "შედით მასზე თქვენი მშობლის ანგარიშიდან, რათა ნახოთ ისტორია {n}-ისთვის.",
  "Byt kod för {n}?": "გსურთ კოდის შეცვლა {n}-ისთვის?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "ძველი კოდი დაუყოვნებლივ წყვეტს მუშაობას და თუ {n} შესულია, ის გამოდის. თქვენ მიიღებთ ახალ კოდს {n}-ის მისაცემად.",
- "Kod kopierad — ge den till {n}": "კოდი დაკოპირებულია — მიეცით {n}-ს"
+ "Kod kopierad — ge den till {n}": "კოდი დაკოპირებულია — მიეცით {n}-ს",
+ "Hämtar nyaste versionen": "უახლესი ვერსიის ჩამოტვირთვა"
 }

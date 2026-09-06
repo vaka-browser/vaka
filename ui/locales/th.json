@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "เข้าถึงสิ่งนี้จากบัญชีผู้ปกครองของคุณเพื่อดูประวัติของ {n}",
  "Byt kod för {n}?": "เปลี่ยนรหัสสำหรับ {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "รหัสเก่าหยุดทำงานทันที และหาก {n} เข้าสู่ระบบแล้ว เขาจะออกจากระบบ คุณได้รับรหัสใหม่ที่จะให้ {n}",
- "Kod kopierad — ge den till {n}": "คัดลอกโค้ดแล้ว — มอบให้กับ {n}"
+ "Kod kopierad — ge den till {n}": "คัดลอกโค้ดแล้ว — มอบให้กับ {n}",
+ "Hämtar nyaste versionen": "กำลังดาวน์โหลดเวอร์ชันล่าสุด"
 }

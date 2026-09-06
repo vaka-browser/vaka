@@ -1639,16 +1639,18 @@ function semverGt(a, b) {
 function checkMacUpdate() {
   const f = globalThis.fetch;
   if (!f) return;
+  let toasted = '';                     // en notis per version – aldrig samma tjat varje koll
   const ping = () => f('https://api.github.com/repos/northcrafto/vaka-dl/releases/latest', { headers: { 'User-Agent': 'Vaka' } })
     .then((r) => r.json())
     .then((j) => {
       const latest = ((j && j.tag_name) || '').replace(/^v/, '');
-      if (latest && semverGt(latest, app.getVersion())) {
+      if (latest && semverGt(latest, app.getVersion()) && latest !== toasted) {
+        toasted = latest;
         broadcast('toast', T('En ny version finns') + ' (' + latest + ') — ' + T('ladda ner på') + ' vaka-web-lovat.vercel.app');
       }
     }).catch(() => {});
   setTimeout(ping, 6000);
-  setInterval(ping, 6 * 60 * 60 * 1000);
+  setInterval(ping, 30 * 60 * 1000);
 }
 
 function startAutoUpdate() {
@@ -1662,17 +1664,42 @@ function startAutoUpdate() {
     autoUpdater.on('update-available', (i) => log('available ' + (i && i.version)));
     autoUpdater.on('update-not-available', (i) => log('up-to-date ' + (i && i.version)));
     autoUpdater.on('update-downloaded', (info) => {
-      log('downloaded ' + (info && info.version));
+      const v = (info && info.version) || '';
+      log('downloaded ' + v);
+      if (v && v === updDownloaded) return;     // samma fil igen (cache-träff vid omkoll) – tyst
+      updDownloaded = v;
       broadcast('toast', 'Vaka ' + ((info && info.version) || '') + ' ' + T('är hämtad — uppdateras nästa gång du startar om.'));
-      broadcast('update-ready', (info && info.version) || '');
+      broadcast('update-ready', v);
     });
     autoUpdater.on('error', (e) => log('error ' + (e && e.message)));
-    const check = () => { try { autoUpdater.checkForUpdates().catch(() => {}); } catch {} };
-    setTimeout(check, 5000);
-    setInterval(check, 6 * 60 * 60 * 1000);
+    runUpdateCheck = () => { try { return autoUpdater.checkForUpdates().catch(() => null); } catch { return Promise.resolve(null); } };
+    setTimeout(runUpdateCheck, 5000);
+    setInterval(runUpdateCheck, 30 * 60 * 1000);
+    // …och när fönstret får fokus igen (högst var 10:e minut) – så att notisen alltid
+    // pekar på den senaste släppta versionen, inte den som råkade vara ny vid start.
+    let lastFocusCheck = 0;
+    app.on('browser-window-focus', () => { const n = Date.now(); if (n - lastFocusCheck > 10 * 60 * 1000) { lastFocusCheck = n; runUpdateCheck(); } });
   } catch {}
 }
 // Användaren tryckte "Starta om & uppdatera" i banner → installera den hämtade uppdateringen nu.
-ipcMain.on('update:install', () => { try { if (autoUpdater) autoUpdater.quitAndInstall(false, true); } catch {} });
+// Färsk koll först: har en ännu nyare version släppts sedan filen hämtades? Då tas den
+// i stället, så att man aldrig startar om till en redan gammal version.
+let updDownloaded = '';
+let updInstalling = false;
+let runUpdateCheck = () => Promise.resolve(null);
+ipcMain.on('update:install', async () => {
+  if (!autoUpdater || updInstalling) return;
+  updInstalling = true;
+  try {
+    const res = await Promise.race([runUpdateCheck(), new Promise((r) => setTimeout(() => r(null), 8000))]);
+    const v = res && res.updateInfo && res.updateInfo.version;
+    if (v && res.downloadPromise && (!updDownloaded || semverGt(v, updDownloaded))) {
+      if (updDownloaded) broadcast('toast', T('Hämtar nyaste versionen') + ' (' + v + ')…');
+      await res.downloadPromise;                 // update-downloaded → updDownloaded = v
+    }
+  } catch {}
+  updInstalling = false;
+  try { autoUpdater.quitAndInstall(false, true); } catch {}
+});
 app.on('will-quit', () => { if (torProc) { try { torProc.kill(); } catch {} } });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Pasiekite tai iš savo tėvų paskyros, kad pamatytumėte {n} istoriją.",
  "Byt kod för {n}?": "Pakeisti {n} kodą?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Senasis kodas iš karto nustoja veikti, o jei {n} yra prisijungęs, jis yra atjungtas. Gaunate naują kodą, kurį turėsite duoti {n}.",
- "Kod kopierad — ge den till {n}": "Kodas nukopijuotas – suteikite jį {n}"
+ "Kod kopierad — ge den till {n}": "Kodas nukopijuotas – suteikite jį {n}",
+ "Hämtar nyaste versionen": "Atsisiunčiama naujausia versija"
 }

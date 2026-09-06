@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "從您的家長帳戶存取此資訊可查看 {n} 的歷史記錄。",
  "Byt kod för {n}?": "更改 {n} 的程式碼？",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "舊代碼立即停止工作，如果 {n} 已登錄，則他將被註銷。您將獲得一個新代碼，輸入 {n}。",
- "Kod kopierad — ge den till {n}": "已複製代碼 — 將其交給 {n}"
+ "Kod kopierad — ge den till {n}": "已複製代碼 — 將其交給 {n}",
+ "Hämtar nyaste versionen": "下載最新版本"
 }

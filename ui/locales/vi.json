@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Truy cập tài khoản này từ tài khoản chính của bạn để xem lịch sử của {n}.",
  "Byt kod för {n}?": "Thay đổi mã cho {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Mã cũ ngừng hoạt động ngay lập tức và nếu {n} đăng nhập, anh ấy sẽ đăng xuất. Bạn nhận được một mã mới để cung cấp cho {n}.",
- "Kod kopierad — ge den till {n}": "Đã sao chép mã — đưa nó cho {n}"
+ "Kod kopierad — ge den till {n}": "Đã sao chép mã — đưa nó cho {n}",
+ "Hämtar nyaste versionen": "Đang tải xuống phiên bản mới nhất"
 }

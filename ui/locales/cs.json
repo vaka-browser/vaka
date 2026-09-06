@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Chcete-li zobrazit historii pro {n}, přejděte do tohoto účtu ze svého nadřazeného účtu.",
  "Byt kod för {n}?": "Změnit kód pro {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Starý kód okamžitě přestane fungovat a pokud je přihlášen {n}, je odhlášen. Získáte nový kód, který dáte {n}.",
- "Kod kopierad — ge den till {n}": "Kód zkopírován – dejte ho {n}"
+ "Kod kopierad — ge den till {n}": "Kód zkopírován – dejte ho {n}",
+ "Hämtar nyaste versionen": "Stahování nejnovější verze"
 }

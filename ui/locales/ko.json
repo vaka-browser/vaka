@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "{n}의 기록을 보려면 부모 계정에서 이에 액세스하세요.",
  "Byt kod för {n}?": "{n}의 코드를 변경하시겠습니까?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "이전 코드는 즉시 작동을 멈추고 {n}이 로그인되어 있으면 로그아웃됩니다. {n}에게 제공할 새 코드를 받았습니다.",
- "Kod kopierad — ge den till {n}": "코드가 복사되었습니다 — {n}에게 전달하세요"
+ "Kod kopierad — ge den till {n}": "코드가 복사되었습니다 — {n}에게 전달하세요",
+ "Hämtar nyaste versionen": "최신 버전 다운로드"
 }

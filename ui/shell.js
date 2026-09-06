@@ -1545,7 +1545,11 @@ $('menu-btn').addEventListener('click', () => window.view.openMenu());
 window.view.onToast((m) => showToast(m));
 window.view.onUpdateReady((v) => showUpdateBanner(v));
 function showUpdateBanner(version) {
-  if (document.getElementById('update-banner')) return;
+  // Fanns redan en banner (äldre version hämtad)? Bygg om den med den nya versionen,
+  // och behåll "Startar om…" om användaren redan tryckt.
+  const prev = document.getElementById('update-banner');
+  const busy = !!(prev && prev.dataset.busy);
+  if (prev) prev.remove();
   const bar = document.createElement('div'); bar.id = 'update-banner';
   bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:300;display:flex;align-items:center;gap:12px;background:var(--color-navy-900);color:#fff;padding:11px 14px 11px 18px;border-radius:14px;box-shadow:0 14px 40px rgba(8,20,35,.45);font-size:13.5px;max-width:92vw;';
   const tt = (k) => (typeof window.t === 'function') ? window.t(k) : k;
@@ -1553,8 +1557,9 @@ function showUpdateBanner(version) {
     + '<button id="upd-now" style="background:#fff;color:var(--color-navy-900);border:0;border-radius:9px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">' + escapeHtml(tt('Starta om & uppdatera')) + '</button>'
     + '<button id="upd-later" style="background:none;border:0;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer;">' + escapeHtml(tt('Senare')) + '</button>';
   document.body.appendChild(bar);
-  bar.querySelector('#upd-now').addEventListener('click', () => { bar.querySelector('#upd-now').textContent = tt('Startar om…'); try { window.view.installUpdate(); } catch {} });
+  bar.querySelector('#upd-now').addEventListener('click', () => { bar.dataset.busy = '1'; bar.querySelector('#upd-now').textContent = tt('Startar om…'); try { window.view.installUpdate(); } catch {} });
   bar.querySelector('#upd-later').addEventListener('click', () => bar.remove());
+  if (busy) { bar.dataset.busy = '1'; bar.querySelector('#upd-now').textContent = tt('Startar om…'); }
 }
 // Nudge: om Vaka inte är standardwebbläsare, visa en banner (som uppdateringsnotisen).
 async function maybeShowDefaultBanner() {

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "גש לזה מחשבון האב שלך כדי לראות את ההיסטוריה של {n}.",
  "Byt kod för {n}?": "לשנות את הקוד עבור {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "הקוד הישן מפסיק לעבוד מיד, ואם {n} מחובר, הוא מתנתק. אתה מקבל קוד חדש לתת {n}.",
- "Kod kopierad — ge den till {n}": "הקוד הועתק - תן אותו ל-{n}"
+ "Kod kopierad — ge den till {n}": "הקוד הועתק - תן אותו ל-{n}",
+ "Hämtar nyaste versionen": "מוריד את הגרסה העדכנית ביותר"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "{n} тарихын көру үшін бұған ата-аналық есептік жазбаңыздан кіріңіз.",
  "Byt kod för {n}?": "{n} кодын өзгерту керек пе?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Ескі код бірден жұмысын тоқтатады және {n} жүйеге кірсе, ол жүйеден шығады. Сіз {n} беру үшін жаңа код аласыз.",
- "Kod kopierad — ge den till {n}": "Код көшірілді — оны {n} мекенжайына беріңіз"
+ "Kod kopierad — ge den till {n}": "Код көшірілді — оны {n} мекенжайына беріңіз",
+ "Hämtar nyaste versionen": "Соңғы нұсқасы жүктелуде"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Akses ini dari akun orang tua Anda untuk melihat riwayat {n}.",
  "Byt kod för {n}?": "Ubah kode untuk {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Kode lama langsung berhenti bekerja, dan jika {n} login, dia logout. Anda mendapatkan kode baru untuk diberikan {n}.",
- "Kod kopierad — ge den till {n}": "Kode disalin — berikan kepada {n}"
+ "Kod kopierad — ge den till {n}": "Kode disalin — berikan kepada {n}",
+ "Hämtar nyaste versionen": "Mengunduh versi terbaru"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Acceda a esto desde su cuenta principal para ver el historial de {n}.",
  "Byt kod för {n}?": "¿Cambiar código para {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "El código antiguo deja de funcionar inmediatamente y, si {n} inicia sesión, se desconecta. Obtienes un nuevo código para dar {n}.",
- "Kod kopierad — ge den till {n}": "Código copiado: dáselo a {n}"
+ "Kod kopierad — ge den till {n}": "Código copiado: dáselo a {n}",
+ "Hämtar nyaste versionen": "Descargando la última versión"
 }

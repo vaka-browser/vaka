@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Приступите овоме са свог родитељског налога да бисте видели историју за {n}.",
  "Byt kod för {n}?": "Променити код за {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Стари код одмах престаје да ради, а ако је {n} пријављен, он је одјављен. Добијате нови код за давање {n}.",
- "Kod kopierad — ge den till {n}": "Код је копиран — дајте га на {n}"
+ "Kod kopierad — ge den till {n}": "Код је копиран — дајте га на {n}",
+ "Hämtar nyaste versionen": "Преузимање најновије верзије"
 }

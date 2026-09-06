@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Accesați-l din contul dvs. de părinte pentru a vedea istoricul pentru {n}.",
  "Byt kod för {n}?": "Schimbați codul pentru {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Vechiul cod nu mai funcționează imediat, iar dacă {n} este conectat, el este deconectat. Primiți un cod nou pe care să îl oferiți {n}.",
- "Kod kopierad — ge den till {n}": "Cod copiat — dă-l lui {n}"
+ "Kod kopierad — ge den till {n}": "Cod copiat — dă-l lui {n}",
+ "Hämtar nyaste versionen": "Descărcarea celei mai recente versiuni"
 }

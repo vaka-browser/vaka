@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "{n}க்கான வரலாற்றைப் பார்க்க, உங்கள் பெற்றோர் கணக்கிலிருந்து இதை அணுகவும்.",
  "Byt kod för {n}?": "{n}க்கான குறியீட்டை மாற்றவா?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "பழைய குறியீடு உடனடியாக வேலை செய்வதை நிறுத்துகிறது, மேலும் {n} உள்நுழைந்திருந்தால், அவர் வெளியேறினார். {n} ஐ வழங்க புதிய குறியீட்டைப் பெறுவீர்கள்.",
- "Kod kopierad — ge den till {n}": "குறியீடு நகலெடுக்கப்பட்டது — அதை {n}க்குக் கொடுங்கள்"
+ "Kod kopierad — ge den till {n}": "குறியீடு நகலெடுக்கப்பட்டது — அதை {n}க்குக் கொடுங்கள்",
+ "Hämtar nyaste versionen": "சமீபத்திய பதிப்பைப் பதிவிறக்குகிறது"
 }

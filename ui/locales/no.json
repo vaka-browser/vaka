@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Få tilgang til denne fra din overordnede konto for å se historikk for {n}.",
  "Byt kod för {n}?": "Vil du endre koden for {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Den gamle koden slutter å virke umiddelbart, og hvis {n} er pålogget, blir han logget ut. Du får en ny kode for å gi {n}.",
- "Kod kopierad — ge den till {n}": "Koden er kopiert – gi den til {n}"
+ "Kod kopierad — ge den till {n}": "Koden er kopiert – gi den til {n}",
+ "Hämtar nyaste versionen": "Laster ned siste versjon"
 }

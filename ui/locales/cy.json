@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Cyrchwch hwn o'ch cyfrif rhiant i weld hanes ar gyfer {n}.",
  "Byt kod för {n}?": "Newid cod ar gyfer {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Mae'r hen god yn stopio gweithio ar unwaith, ac os yw {n} wedi mewngofnodi, mae'n allgofnodi. Rydych chi'n cael cod newydd i'w roi {n}.",
- "Kod kopierad — ge den till {n}": "Cod wedi'i gopïo — ei roi i {n}"
+ "Kod kopierad — ge den till {n}": "Cod wedi'i gopïo — ei roi i {n}",
+ "Hämtar nyaste versionen": "Wrthi'n lawrlwytho'r fersiwn diweddaraf"
 }

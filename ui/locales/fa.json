@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "برای مشاهده سابقه {n} از حساب والدین خود به این مورد دسترسی داشته باشید.",
  "Byt kod för {n}?": "کد {n} را تغییر دهید؟",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "کد قدیمی بلافاصله کار نمی کند و اگر {n} وارد سیستم شود، از سیستم خارج می شود. شما یک کد جدید برای دادن {n} دریافت می کنید.",
- "Kod kopierad — ge den till {n}": "کد کپی شد - آن را به {n} بدهید"
+ "Kod kopierad — ge den till {n}": "کد کپی شد - آن را به {n} بدهید",
+ "Hämtar nyaste versionen": "در حال دانلود آخرین نسخه"
 }

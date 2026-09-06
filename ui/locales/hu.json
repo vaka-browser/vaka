@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Nyisd meg ezt a szülői fiókodból, hogy megtekintsd {n} előzményeit.",
  "Byt kod för {n}?": "Módosítja a(z) {n} kódját?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "A régi kód azonnal leáll, és ha {n} be van jelentkezve, akkor kijelentkezett. Új kódot kap a(z) {n} megadásához.",
- "Kod kopierad — ge den till {n}": "Kód kimásolva – add ide {n}"
+ "Kod kopierad — ge den till {n}": "Kód kimásolva – add ide {n}",
+ "Hämtar nyaste versionen": "A legújabb verzió letöltése"
 }

@@ -752,5 +752,6 @@
  "Byt kod för {n}?": "{n} के लिए कोड बदलें?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "पुराना कोड तुरंत काम करना बंद कर देता है, और यदि {n} लॉग इन है, तो वह लॉग आउट हो जाता है। आपको {n} देने के लिए एक नया कोड मिलता है।",
  "Kod kopierad — ge den till {n}": "कोड कॉपी किया गया - इसे {n} को दें",
- "Historik för {n}": "{n} का इतिहास"
+ "Historik för {n}": "{n} का इतिहास",
+ "Hämtar nyaste versionen": "नवीनतम संस्करण डाउनलोड हो रहा है"
 }

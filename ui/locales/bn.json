@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "{n}-এর ইতিহাস দেখতে আপনার অভিভাবক অ্যাকাউন্ট থেকে এটি অ্যাক্সেস করুন।",
  "Byt kod för {n}?": "{n} এর জন্য কোড পরিবর্তন করবেন?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "পুরানো কোড অবিলম্বে কাজ করা বন্ধ করে, এবং যদি {n} লগ ইন করা হয়, সে লগ আউট হয়. আপনি {n} দেওয়ার জন্য একটি নতুন কোড পাবেন।",
- "Kod kopierad — ge den till {n}": "কোড কপি করা হয়েছে — এটি {n} কে দিন"
+ "Kod kopierad — ge den till {n}": "কোড কপি করা হয়েছে — এটি {n} কে দিন",
+ "Hämtar nyaste versionen": "সর্বশেষ সংস্করণ ডাউনলোড করা হচ্ছে"
 }

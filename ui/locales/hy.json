@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Մուտք գործեք սա ձեր ծնողական հաշվից՝ {n}-ի պատմությունը տեսնելու համար:",
  "Byt kod för {n}?": "Փոխե՞լ կոդը {n}-ի համար:",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Հին կոդը անմիջապես դադարում է աշխատել, և եթե {n}-ը մուտք է գործել, նա դուրս է գալիս: Դուք նոր կոդ եք ստանում {n} տալու համար:",
- "Kod kopierad — ge den till {n}": "Կոդը պատճենված է — տվեք այն {n}-ին"
+ "Kod kopierad — ge den till {n}": "Կոդը պատճենված է — տվեք այն {n}-ին",
+ "Hämtar nyaste versionen": "Ներբեռնվում է վերջին տարբերակը"
 }

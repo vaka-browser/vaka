@@ -685,5 +685,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.",
  "Byt kod för {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.",
- "Kod kopierad — ge den till {n}"
+ "Kod kopierad — ge den till {n}",
+ "Hämtar nyaste versionen"
 ]

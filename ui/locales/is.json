@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Fáðu aðgang að þessu frá foreldrareikningnum þínum til að sjá feril fyrir {n}.",
  "Byt kod för {n}?": "Breyta kóða fyrir {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Gamli kóðinn hættir strax að virka og ef {n} er skráður inn er hann skráður út. Þú færð nýjan kóða til að gefa {n}.",
- "Kod kopierad — ge den till {n}": "Kóði afritaður — gefðu hann {n}"
+ "Kod kopierad — ge den till {n}": "Kóði afritaður — gefðu hann {n}",
+ "Hämtar nyaste versionen": "Að sækja nýjustu útgáfuna"
 }

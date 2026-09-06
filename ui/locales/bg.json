@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Достъп до това от родителския си акаунт, за да видите хронологията за {n}.",
  "Byt kod för {n}?": "Промяна на кода за {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Старият код спира да работи веднага и ако {n} е влязъл, той е излязъл. Получавате нов код, който да дадете на {n}.",
- "Kod kopierad — ge den till {n}": "Кодът е копиран — дайте го на {n}"
+ "Kod kopierad — ge den till {n}": "Кодът е копиран — дайте го на {n}",
+ "Hämtar nyaste versionen": "Изтегля се най-новата версия"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Dostopite do tega iz svojega nadrejenega računa, če si želite ogledati zgodovino za {n}.",
  "Byt kod för {n}?": "Spremeniti kodo za {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Stara koda takoj preneha delovati in če je {n} prijavljen, je odjavljen. Dobiš novo kodo, ki jo daš {n}.",
- "Kod kopierad — ge den till {n}": "Koda je kopirana – dajte jo {n}"
+ "Kod kopierad — ge den till {n}": "Koda je kopirana – dajte jo {n}",
+ "Hämtar nyaste versionen": "Prenašanje najnovejše različice"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Piekļūstiet tam no sava vecāku konta, lai skatītu {n} vēsturi.",
  "Byt kod för {n}?": "Vai mainīt kodu {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Vecais kods nekavējoties pārstāj darboties, un, ja {n} ir pieteicies, viņš tiek izrakstīts. Jūs saņemat jaunu kodu, lai ievadītu {n}.",
- "Kod kopierad — ge den till {n}": "Kods ir nokopēts — nododiet to {n}"
+ "Kod kopierad — ge den till {n}": "Kods ir nokopēts — nododiet to {n}",
+ "Hämtar nyaste versionen": "Notiek jaunākās versijas lejupielāde"
 }

@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Αποκτήστε πρόσβαση σε αυτό από τον γονικό λογαριασμό σας για να δείτε το ιστορικό για το {n}.",
  "Byt kod för {n}?": "Αλλαγή κωδικού για {n};",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Ο παλιός κωδικός σταματά να λειτουργεί αμέσως και εάν ο {n} είναι συνδεδεμένος, αποσυνδέεται. Λαμβάνετε έναν νέο κωδικό για να δώσετε το {n}.",
- "Kod kopierad — ge den till {n}": "Ο κωδικός αντιγράφηκε — δώστε τον στον {n}"
+ "Kod kopierad — ge den till {n}": "Ο κωδικός αντιγράφηκε — δώστε τον στον {n}",
+ "Hämtar nyaste versionen": "Λήψη της πιο πρόσφατης έκδοσης"
 }

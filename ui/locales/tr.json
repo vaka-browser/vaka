@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "{n} geçmişini görmek için buna ebeveyn hesabınızdan erişin.",
  "Byt kod för {n}?": "{n} için kod değiştirilsin mi?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Eski kod hemen çalışmayı durdurur ve eğer {n} oturum açmışsa, oturumu kapatılır. {n}'a verecek yeni bir kod alırsınız.",
- "Kod kopierad — ge den till {n}": "Kod kopyalandı — onu {n}'a verin"
+ "Kod kopierad — ge den till {n}": "Kod kopyalandı — onu {n}'a verin",
+ "Hämtar nyaste versionen": "En son sürümün indirilmesi"
 }

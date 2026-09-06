@@ -752,5 +752,6 @@
  "Öppna det här från ditt förälder-konto för att se historik för {n}.": "Faigh rochtain air seo ó do chuntas tuismitheora chun stair {n} a fheiceáil.",
  "Byt kod för {n}?": "Athrú cód le haghaidh {n}?",
  "Den gamla koden slutar fungera direkt, och om {n} är inloggad loggas hän ut. Du får en ny kod att ge {n}.": "Stopann an seanchód ag obair láithreach, agus má tá {n} logáilte isteach, tá sé logáilte amach. Faigheann tú cód nua le {n} a thabhairt.",
- "Kod kopierad — ge den till {n}": "Cóipeáladh an cód — tabhair do {n} é"
+ "Kod kopierad — ge den till {n}": "Cóipeáladh an cód — tabhair do {n} é",
+ "Hämtar nyaste versionen": "Íoslódáil an leagan is déanaí"
 }
