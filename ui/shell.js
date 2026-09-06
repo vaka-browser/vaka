@@ -1701,7 +1701,7 @@ $('bm-star').addEventListener('click', () => {
   let l = getBookmarks();
   if (isBookmarked(active.url)) l = l.filter((b) => b.url !== active.url);
   else l.unshift({ url: active.url, title: active.title || active.url, favicon: active.favicon || null });
-  saveBookmarks(l); updateStar();
+  saveBookmarks(l); updateStar(); renderBookmarkBar();
 });
 function bmShort(e) {
   let t = e.title || '';
@@ -2942,6 +2942,7 @@ applyKidIndicator();
 if (account && account.token) { try { window.session.setkey(accountKey(account)); } catch {} if (account.isChild) { syncChild(); startChildSync(); } else { refreshPro(); startParentSync(); } try { loadSocMe().then(() => updateAccountBtn()); } catch {} }   // hämta profilbild → visa i kontoknappen
 // Föll inloggningen bort ur localStorage men finns krypterad i nyckelringen? Återställ (efter servervalidering).
 if (!account || !account.token) {
+  try { window.session.setkey(null); } catch {}   // utloggad → inget lösenordsvalv
   (async () => {
     let r; try { r = await window.auth.recall(); } catch { return; }
     if (!r || !r.ok || !r.account || !r.account.token) return;
@@ -2958,5 +2959,4 @@ if (!account || !account.token) {
     try { applyKidIndicator(); } catch {}
   })();
 }
-else { try { window.session.setkey(null); } catch {} }
 
