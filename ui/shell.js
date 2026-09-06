@@ -733,6 +733,9 @@ $('settings-reset').addEventListener('click', () => {
 
 /* ── Inloggning med mejl + engångskod ── */
 let account = null;   // { email, token, pro }
+// Deklareras HÄR (före updateAccountBtn() vid uppstart) – låg den längre ner kastade
+// let-TDZ "Cannot access 'socMe' before initialization" för inloggade → vit skärm, inga flikar.
+let socMe = null, socChat = null, socChatName = '', socPoll = null, socLastTs = 0, socMembers = {}, socSeen = {}, socLoading = false;
 try { account = JSON.parse(localStorage.getItem('skoll-account')); } catch {}
 if (account && !account.token) account = null;  // gammalt kontonummer-format → nollställ
 let pendingEmail = null;
@@ -997,7 +1000,6 @@ function showConfirmDelete() {
   });
 }
 /* ── Socialt: profil, vänner & chatt ── */
-let socMe = null, socChat = null, socChatName = '', socPoll = null, socLastTs = 0, socMembers = {}, socSeen = {}, socLoading = false;
 async function loadSocMe() {
   if (!account || !account.token) { socMe = null; return null; }
   try { const r = await window.social.me(account.token); if (r && r.ok) socMe = r; } catch {}
