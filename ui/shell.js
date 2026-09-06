@@ -334,7 +334,6 @@ window.view.onShowQR((url, dataUrl) => {
 const infobar = $('infobar');
 let infobarState = null;
 function showInfobar(res, tab, url) {
-  $('pwbar').style.display = 'none';
   const danger = res.level === 'danger';
   infobar.style.background = danger ? 'linear-gradient(90deg,#c0433d,#a5352f)' : 'linear-gradient(90deg,#cf9128,#a97c22)';
   $('infobar-ico').style.background = 'rgba(255,255,255,.22)';
@@ -1852,36 +1851,8 @@ $('pw-add-btn').addEventListener('click', async () => {
   renderPasswords();
 });
 
-/* ── Spara lösenord-bar (fråga vid inloggning) ── */
-let pwOfferCred = null;
-function hidePwbar() { $('pwbar').style.display = 'none'; if ($('infobar').style.display === 'none') window.view.insetTop(0); }
-window.pw.onOffer((c) => {
-  pwOfferCred = c;
-  let host = c.origin; try { host = new URL(c.origin).hostname.replace(/^www\./, ''); } catch {}
-  $('pwbar-sub').textContent = (c.username ? c.username + ' · ' : '') + host;
-  hideInfobar();
-  $('pwfillbar').style.display = 'none';
-  $('pwbar').style.display = 'flex';
-  window.view.insetTop(56);
-});
-let pwFillCred = null;   // vilken sparad inloggning autofyll-rutan gäller
-function hidePwfillbar() { $('pwfillbar').style.display = 'none'; if ($('infobar').style.display === 'none') window.view.insetTop(0); }
-$('pwbar-save').addEventListener('click', async () => {
-  if (pwOfferCred) {
-    await window.pw.save({ ...pwOfferCred, autofill: true });
-    pwFillCred = pwOfferCred;
-    let host = pwOfferCred.origin; try { host = new URL(pwOfferCred.origin).hostname.replace(/^www\./, ''); } catch {}
-    $('pwfillbar-sub').textContent = 'Nästa gång du besöker ' + host + ' fyller vi i inloggningen åt dig.';
-  }
-  pwOfferCred = null; hidePwbar();
-  if (pwFillCred) { $('pwfillbar').style.display = 'flex'; window.view.insetTop(56); }
-});
-$('pwbar-no').addEventListener('click', () => { pwOfferCred = null; hidePwbar(); });
-$('pwfillbar-yes').addEventListener('click', () => { pwFillCred = null; hidePwfillbar(); showToast('Vi fyller i lösenordet åt dig nästa gång.'); });
-$('pwfillbar-no').addEventListener('click', async () => {
-  if (pwFillCred) await window.pw.setAutofill({ origin: pwFillCred.origin, username: pwFillCred.username || '', on: false });
-  pwFillCred = null; hidePwfillbar();
-});
+/* ── Spara lösenord: flytande notis uppe till höger (ui/pwpopup.html), vit i ljust läge, mörk i mörkt ── */
+window.pw.onOffer((c) => { try { window.pw.openPopup({ cred: c, theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light' }); } catch {} });
 
 /* ── Vaka Wallet ── */
 function fmtNum(s) { return (s || '').replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim(); }
@@ -2018,8 +1989,8 @@ async function showBuyConfirm(order) {
 }
 
 /* ── Wallet-notiser (spara vid köp / fyll i) ── */
-function hideBar(id) { $(id).style.display = 'none'; const open = ['infobar', 'pwbar', 'pwfillbar', 'wsavebar', 'wfillbar'].some((b) => $(b) && $(b).style.display === 'flex'); if (!open) window.view.insetTop(0); }
-function showBar(id) { ['infobar', 'pwbar', 'pwfillbar', 'wsavebar', 'wfillbar'].forEach((b) => { if (b !== id && $(b)) $(b).style.display = 'none'; }); $(id).style.display = 'flex'; window.view.insetTop(56); }
+function hideBar(id) { $(id).style.display = 'none'; const open = ['infobar', 'wsavebar', 'wfillbar'].some((b) => $(b) && $(b).style.display === 'flex'); if (!open) window.view.insetTop(0); }
+function showBar(id) { ['infobar', 'wsavebar', 'wfillbar'].forEach((b) => { if (b !== id && $(b)) $(b).style.display = 'none'; }); $(id).style.display = 'flex'; window.view.insetTop(56); }
 let wlSaveOffer = null;
 window.wallet.onOffer((c) => {
   wlSaveOffer = c;

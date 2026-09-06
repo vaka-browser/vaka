@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  /* "Spara lösenord"-notisen: flytande kort uppe till höger över sidan. Vit i ljust läge,
+     mörk i mörkt läge (tema skickas med som ?theme=dark från skalet). */
+  :root { --bg: #fff; --line: #e7ecf2; --fg: #0e2a47; --sub: #6b7d8f; --soft: #f1f5f9; --soft-h: #e6ecf3;
+          --ico-bg: #eef4fb; --ico-fg: #2f6db0; --ok-bg: #e6f7ee; --ok-fg: #12925a; --accent: #c2643f;
+          --shadow: 0 20px 48px rgba(14,42,71,.30), 0 4px 12px rgba(14,42,71,.12); }
+  :root[data-theme="dark"] { --bg: #171718; --line: #2b2b2d; --fg: #f2f2f4; --sub: rgba(240,240,244,.55);
+          --soft: rgba(255,255,255,.08); --soft-h: rgba(255,255,255,.14); --ico-bg: rgba(255,255,255,.08); --ico-fg: #cfd6de;
+          --ok-bg: rgba(18,146,90,.22); --ok-fg: #5ed69a; --shadow: 0 20px 48px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.35); }
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  .card { margin: 8px 10px 16px 10px; background: var(--bg); border-radius: 18px; overflow: hidden;
+    box-shadow: var(--shadow); border: 1px solid var(--line); animation: pop .18s cubic-bezier(.2,.8,.2,1); transform-origin: top right;
+    padding: 15px 16px 14px; color: var(--fg); }
+  @keyframes pop { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
+  .top { display: flex; gap: 12px; align-items: flex-start; }
+  .ico { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--ico-bg); color: var(--ico-fg); }
+  .ico.ok { background: var(--ok-bg); color: var(--ok-fg); }
+  .ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .meta { flex: 1; min-width: 0; padding-top: 1px; }
+  h1 { font-size: 14.5px; font-weight: 750; margin: 0 0 3px; letter-spacing: -.015em; }
+  .sub { font-size: 12.5px; color: var(--sub); line-height: 1.45; overflow-wrap: anywhere; }
+  .sub b { color: var(--fg); font-weight: 650; }
+  .x { flex: none; border: 0; background: transparent; cursor: pointer; color: var(--sub); width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 18px; line-height: 1; margin: -4px -6px 0 0; }
+  .x:hover { background: var(--soft); color: var(--fg); }
+  .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 13px; }
+  button.b { height: 34px; padding: 0 15px; border-radius: 999px; font-weight: 650; font-size: 13px; cursor: pointer; border: 0; transition: filter .15s, background .15s; }
+  .b.soft { background: var(--soft); color: var(--fg); }
+  .b.soft:hover { background: var(--soft-h); }
+  .b.acc { background: var(--accent); color: #fff; }
+  .b.acc:hover { filter: brightness(1.08); }
+  button:focus { outline: none; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="top">
+      <span class="ico" id="ico"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+      <div class="meta">
+        <h1 id="title">Spara lösenordet?</h1>
+        <div class="sub" id="sub"></div>
+      </div>
+      <button class="x" id="close" title="Stäng">&times;</button>
+    </div>
+    <div class="row" id="row-offer">
+      <button class="b soft" id="no">Inte nu</button>
+      <button class="b acc" id="save">Spara</button>
+    </div>
+    <div class="row" id="row-fill" style="display:none">
+      <button class="b soft" id="fill-no">Nej tack</button>
+      <button class="b acc" id="fill-yes">Ja, fyll i åt mig</button>
+    </div>
+  </div>
+  <script>
+    // Översättning: samma ordlista som skalet (vaka-lang i localStorage delas, samma file://-origin).
+    window.locale = { load: (l) => { try { return require('electron').ipcRenderer.sendSync('i18n:load', l) || {}; } catch (e) { return {}; } } };
+  </script>
+  <script src="i18n.js"></script>
+  <script>
+    const { ipcRenderer } = require('electron');
+    const q = new URLSearchParams(location.search);
+    if (q.get('theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const tt = (s) => (typeof window.t === 'function') ? window.t(s) : s;
+    let cred = null, hovered = false, idle = null;
+    const AUTOFILL = true;   // stödjer det här trädet "fyll i nästa gång"-frågan?
+    const close = () => ipcRenderer.send('pw:popup-close');
+    function reportSize() { try { ipcRenderer.send('pw:popup-size', Math.ceil($('card').getBoundingClientRect().bottom) + 16); } catch {} }
+    function armIdle(ms) { clearTimeout(idle); idle = setTimeout(() => { if (hovered) armIdle(4000); else close(); }, ms); }
+    document.body.addEventListener('mouseenter', () => { hovered = true; });
+    document.body.addEventListener('mouseleave', () => { hovered = false; });
+    ipcRenderer.on('pw-cred', (_e, c) => {
+      cred = c || null;
+      let host = cred && cred.origin; try { host = new URL(cred.origin).hostname.replace(/^www\./, ''); } catch {}
+      $('sub').innerHTML = (cred && cred.username ? '<b>' + esc(cred.username) + '</b> · ' : '') + esc(host || '');
+      reportSize(); armIdle(30000);
+    });
+    $('close').onclick = close;
+    $('no').onclick = close;
+    $('save').onclick = async () => {
+      if (!cred) return close();
+      $('save').disabled = true;
+      try { await ipcRenderer.invoke('pw:save', AUTOFILL ? { ...cred, autofill: true } : cred); } catch {}
+      $('ico').classList.add('ok');
+      $('ico').innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+      $('title').textContent = tt('Lösenordet är sparat');
+      $('row-offer').style.display = 'none';
+      if (AUTOFILL) {
+        $('sub').textContent = tt('Vill du att vi fyller i det åt dig automatiskt nästa gång?');
+        $('row-fill').style.display = 'flex';
+        reportSize(); armIdle(30000);
+      } else { $('sub').textContent = ''; reportSize(); setTimeout(close, 1400); }
+    };
+    $('fill-yes').onclick = close;
+    $('fill-no').onclick = async () => {
+      try { if (cred) await ipcRenderer.invoke('pw:set-autofill', { origin: cred.origin, username: cred.username || '', on: false }); } catch {}
+      close();
+    };
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    reportSize();
+  </script>
+</body>
+</html>

@@ -101,7 +101,7 @@ function closeDlPopup(ctx) {
 function openDlPopup(ctx) {
   if (!ctx || !ctx.win || ctx.win.isDestroyed()) return;
   if (ctx.dlView) { try { ctx.win.contentView.addChildView(ctx.dlView); } catch {} positionDlPopup(ctx); ctx.dlView.webContents.send('dl-data', downloads); return; }  // redan öppen → höj + uppdatera
-  const view = new WebContentsView({ webPreferences: { nodeIntegration: true, contextIsolation: false } });
+  const view = new WebContentsView({ webPreferences: { nodeIntegration: true, contextIsolation: false, transparent: true } });   // transparent: bara kortet syns, inte vyns rektangel
   try { view.setBackgroundColor('#00000000'); } catch {}
   ctx.dlView = view;
   ctx._dlH = 200;
@@ -977,6 +977,44 @@ ipcMain.on('dl:cancel', (_e, id) => { const it = dlItems.get(id), r = downloads.
 ipcMain.on('dl:popup-toggle', (e) => { const ctx = wins.get(e.sender.id); if (!ctx) return; if (ctx.dlView) closeDlPopup(ctx); else openDlPopup(ctx); });
 ipcMain.on('dl:popup-close', (e) => { const ctx = [...wins.values()].find((c) => c.dlView && !c.dlView.webContents.isDestroyed() && c.dlView.webContents === e.sender); if (ctx) closeDlPopup(ctx); });
 ipcMain.on('dl:popup-size', (e, h) => { const ctx = [...wins.values()].find((c) => c.dlView && !c.dlView.webContents.isDestroyed() && c.dlView.webContents === e.sender); if (ctx && typeof h === 'number') positionDlPopup(ctx, Math.round(h)); });
+
+/* "Spara lösenord"-notisen = flytande kort uppe till höger, som nedladdningsrutan: en
+ * WebContentsView OVANPÅ fliken (skalets DOM ligger under sidans native-vy). Tema (ljus/mörk)
+ * följer skalet och skickas med som query. */
+const PW_W = 372;
+function positionPwPopup(ctx, h) {
+  if (!ctx || !ctx.pwView || !ctx.win || ctx.win.isDestroyed()) return;
+  const cb = ctx.win.getContentBounds();
+  if (typeof h === 'number') ctx._pwH = h;
+  const top = Math.max(0, Math.round((ctx.topInset || 92) + 6));
+  const height = Math.max(60, Math.min(ctx._pwH || 150, cb.height - top - 12));
+  try { ctx.pwView.setBounds({ x: Math.round(cb.width - PW_W - 8), y: top, width: PW_W, height }); } catch {}
+}
+function closePwPopup(ctx) {
+  if (!ctx || !ctx.pwView) return;
+  try { ctx.win.contentView.removeChildView(ctx.pwView); } catch {}
+  try { ctx.pwView.webContents.close(); } catch {}
+  if (ctx._pwRepos) { try { ctx.win.removeListener('resize', ctx._pwRepos); ctx.win.removeListener('move', ctx._pwRepos); } catch {} ctx._pwRepos = null; }
+  ctx.pwView = null;
+}
+function openPwPopup(ctx, cred, theme) {
+  if (!ctx || !ctx.win || ctx.win.isDestroyed() || !cred) return;
+  closePwPopup(ctx);                                   // ny fråga ersätter en ev. gammal
+  const view = new WebContentsView({ webPreferences: { nodeIntegration: true, contextIsolation: false, transparent: true } });   // transparent: bara kortet syns, inte vyns rektangel
+  try { view.setBackgroundColor('#00000000'); } catch {}
+  ctx.pwView = view; ctx._pwH = 150;
+  ctx.win.contentView.addChildView(view);
+  positionPwPopup(ctx);
+  const repos = () => positionPwPopup(ctx);
+  ctx._pwRepos = repos;
+  ctx.win.on('resize', repos); ctx.win.on('move', repos);
+  view.webContents.loadFile(path.join(__dirname, 'ui', 'pwpopup.html'), { query: { theme: theme === 'dark' ? 'dark' : 'light' } });
+  view.webContents.on('did-finish-load', () => { try { view.webContents.send('pw-cred', cred); } catch {} });
+}
+const pwCtxOf = (e) => [...wins.values()].find((c) => c.pwView && !c.pwView.webContents.isDestroyed() && c.pwView.webContents === e.sender);
+ipcMain.on('pw:popup-open', (e, d) => { const ctx = ctxFor(e); if (ctx && d && d.cred) openPwPopup(ctx, d.cred, d.theme); });
+ipcMain.on('pw:popup-close', (e) => { const ctx = pwCtxOf(e); if (ctx) closePwPopup(ctx); });
+ipcMain.on('pw:popup-size', (e, h) => { const ctx = pwCtxOf(e); if (ctx && typeof h === 'number') positionPwPopup(ctx, h); });
 ipcMain.on('dl:open', (_e, id) => { const r = downloads.find((d) => d.id === id); if (r && r.state !== 'infected' && r.state !== 'deleted') shell.openPath(r.path).catch(() => {}); });
 ipcMain.on('dl:folder', (_e, id) => { const r = downloads.find((d) => d.id === id); if (r && r.state !== 'infected' && r.state !== 'deleted') shell.showItemInFolder(r.path); });
 ipcMain.on('dl:remove-threat', (_e, id) => {
